@@ -6,3 +6,5 @@ b::Float64 = 3.
 result = add(a, b)
 
 print(result)
+
+ale = "ale"
