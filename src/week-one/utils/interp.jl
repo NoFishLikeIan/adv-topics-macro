@@ -1,4 +1,4 @@
-RealArray{T <: Real} = AbstractVector{T}
+include("types.jl")
 
 function intervalbounds(partition::RealArray, x::Real)::Tuple{Int,Int}
 
@@ -16,7 +16,7 @@ end
 function constructlinear(arguments::RealArray, evaluations::RealArray)
     
     interp = function (x::Real)  
-        lower, upper = intervalbounds(evaluations, x)
+        lower, upper = intervalbounds(arguments, x)
         
         # TODO: This behaviour might not be the best
         if lower == 0 return -Inf end
