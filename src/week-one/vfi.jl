@@ -7,11 +7,11 @@ include("detgrowth.jl")
 
 using Plots
 
-model = DetGrowthModel(0.9, 0.5, 0.01, 1_000)
+model = DetGrowthModel(0.9, 0.5, 1., 0.01, 1_000)
 
 function construct_utility(model::DetGrowthModel)
     function utility(k_cur::Real, k_prime::Real)::Real
-        cap = k_cur^model.α
+        cap = model.z * k_cur^model.α
         return cap > k_prime ? log(cap - k_prime) : -Inf
     end
 
