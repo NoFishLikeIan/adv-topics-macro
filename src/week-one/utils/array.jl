@@ -1,7 +1,7 @@
 include("types.jl")
 
 function unknown_fn(array::RealArray)
-    max::Float64 = 0.
+    max::Float64 = -Inf
     idx::Int = -1
 
     for (index, element) in enumerate(array)
@@ -42,14 +42,15 @@ end
 """
 Find the maximum value and index of an array. 
 """
-function find_maximum(
-    array::RealArray;
-    mode="unknown"
-)   
-    max = 0
-    idx = -1
-
+function find_maximum(array::RealArray; mode="unknown")::Tuple{Int,Real}  
     fn = mode == "concave" ? concave_fn : unknown_fn
     
     return fn(array)
+end
+
+"""
+Computes the sup norm between two arrays
+"""
+function distance(vec1::RealArray, vec2::RealArray)::Real
+    maximum(abs.(vec1 - vec2))
 end
