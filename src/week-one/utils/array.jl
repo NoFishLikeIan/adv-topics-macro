@@ -1,6 +1,6 @@
 include("types.jl")
 
-function unknown_fn(array::RealArray)
+function naive_max(array::RealArray)
     max::Float64 = -Inf
     idx::Int = -1
 
@@ -14,18 +14,18 @@ function unknown_fn(array::RealArray)
     return idx, max
 end
 
-function concave_fn(array::RealArray)
+function concave_max(array::RealArray)
     low::Int = 1
     high::Int = length(array) 
 
-    while low != high
-
-        # TODO: Better way to do this
-        if high == low + 1
-            high = low
-        end
+    while high - low > 2
 
         mid = floor(Int, low + (high - low) / 2)
+
+        while array[mid] == -Inf
+            high = mid
+            mid = floor(Int, low + (high - low) / 2)
+        end
         
         if array[mid + 1] < array[mid]
             high = mid
@@ -36,16 +36,9 @@ function concave_fn(array::RealArray)
         end
     end
 
-    return low, array[low]
-end
+    arg_max = array[low] > array[high] ? low : high
 
-"""
-Find the maximum value and index of an array. 
-"""
-function find_maximum(array::RealArray; mode="unknown")::Tuple{Int,Real}  
-    fn = mode == "concave" ? concave_fn : unknown_fn
-    
-    return fn(array)
+    return arg_max, array[arg_max]
 end
 
 """

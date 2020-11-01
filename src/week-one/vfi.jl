@@ -2,11 +2,12 @@ include("utils/types.jl")
 include("utils/array.jl")
 include("utils/interp.jl")
 
+include("iteralgos.jl")
 include("detgrowth.jl")
 
 using Plots
 
-model = DetGrowthModel(0.9, 0.5, 0.01, 2_000)
+model = DetGrowthModel(0.9, 0.5, 0.01, 1_000)
 
 function construct_utility(model::DetGrowthModel)
     function utility(k_cur::Real, k_prime::Real)::Real
@@ -21,11 +22,15 @@ function construct_utility(model::DetGrowthModel)
     return utility
 end
 
-function solve_value_function(model::DetGrowthModel)
+
+function solve_value_function(
+        model::DetGrowthModel;
+        monotone=false, concave=false, howard=false
+    )
     utility = construct_utility(model)
 
     k_star = equil_k(model)
-    k = collect(range(0.01, k_star + 2, length=model.k_size))
+    k = collect(range(0.01, k_star + 1, length=model.k_size))
     k_grid = collect(Iterators.product(k, k))
 
     V_0 = utility(k_star, k_star) / (1 - model.β) * ones(model.k_size)
@@ -34,17 +39,14 @@ function solve_value_function(model::DetGrowthModel)
     V_i = copy(V_0)
     policy_vec = -1 * ones(model.k_size)
 
+    iter_fn = monotone ?  monotone_iteration(model, u_matrix, policy_vec, concave, howard) : naive_iteration(model, u_matrix, policy_vec, concave, howard)
+
+    print("Starting iterations...\n")
+
     while true
-        V_iter = copy(V_i)
-        for (k_idx, utility_row) in enumerate(eachrow(u_matrix))
-            H = utility_row + model.β * V_i
-            k_prime, v_max = find_maximum(H)
+        V_iter = iter_fn(V_i)
 
-            V_iter[k_idx] = v_max
-            policy_vec[k_idx] = k_prime
-        end
-
-        if distance(V_iter, V_i) < model.ε break end
+        if distance(V_iter, V_i) < model.ε  break end
 
         V_i = V_iter
     end
@@ -53,9 +55,32 @@ function solve_value_function(model::DetGrowthModel)
 
     
     policy = constructlinear(k, evaluations)
+
     return V_i, policy
 
 end
 
+printpolicy(V, policy) = print(V[2:5], "-", policy(0.5), "-", policy(1), "\n\n")
 
-V, policy = solve_value_function(model)
+
+print("Simple\n")
+@time V, policy = solve_value_function(model)
+printpolicy(V, policy)
+
+
+print("Monotone\n")
+@time V, policy = solve_value_function(model, monotone=true)
+printpolicy(V, policy)
+
+
+print("Concave\n")
+@time V, policy = solve_value_function(model, concave=true)
+printpolicy(V, policy)
+
+
+if false
+    # FIXME: Doesn't work
+    print("Howard\n")
+    @time V, policy = solve_value_function(model, howard=true)
+    printpolicy(V, policy)
+end
