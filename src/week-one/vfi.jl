@@ -4,7 +4,9 @@ include("utils/interp.jl")
 
 include("iteralgos.jl")
 include("model/detgrowth.jl")
+include("model/dynamics.jl")
 
+using LinearAlgebra
 using Plots
 
 model = DetGrowthModel(0.9, 0.5, 1., 0.01, 1_000)
@@ -39,7 +41,7 @@ function solve_value_function(
     V_i = copy(V_0)
     policy_vec = -1 * ones(model.k_size)
 
-    iter_fn = monotone ?  monotone_iteration(model, u_matrix, policy_vec, concave, howard) : naive_iteration(model, u_matrix, policy_vec, concave, howard)
+    iter_fn = monotone ?  monotone_iteration(model, u_matrix, policy_vec, concave) : naive_iteration(model, u_matrix, policy_vec, concave)
 
     print("Starting iterations...\n")
 
@@ -48,10 +50,26 @@ function solve_value_function(
 
         if distance(V_iter, V_i) < model.ε  break end
 
+        if howard
+            # As implemented by Heer and Maubner (2008)
+            # TODO: Not as fast
+            
+            u = [u_matrix[i, asint(policy_vec[i])] for i in 1:model.k_size]
+            
+            Q = zeros((model.k_size, model.k_size))
+            
+            for (i, j) in enumerate(policy_vec)
+                Q[i, asint(j)] = 1.
+            end
+
+            V_iter = inv(I - model.β * Q) * u
+
+        end
+
         V_i = V_iter
     end
 
-    evaluations = [k[trunc(Int, p)] for p in policy_vec]
+    evaluations = [k[asint(p)] for p in policy_vec]
 
     
     policy = constructlinear(k, evaluations)
@@ -78,7 +96,6 @@ print("Concave\n")
 printpolicy(V, policy)
 
 
-# FIXME: Doesn't work
 print("Howard\n")
 @time V, policy = solve_value_function(model, howard=true)
 printpolicy(V, policy)
