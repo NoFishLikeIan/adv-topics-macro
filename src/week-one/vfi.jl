@@ -78,9 +78,7 @@ print("Concave\n")
 printpolicy(V, policy)
 
 
-if false
-    # FIXME: Doesn't work
-    print("Howard\n")
-    @time V, policy = solve_value_function(model, howard=true)
-    printpolicy(V, policy)
-end
+# FIXME: Doesn't work
+print("Howard\n")
+@time V, policy = solve_value_function(model, howard=true)
+printpolicy(V, policy)
