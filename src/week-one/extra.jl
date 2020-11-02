@@ -29,6 +29,3 @@ end
 
 xs = collect(range(-2, 2, step=0.1))
 fn(x) = sin(2π * x) - 2 * x
-
-plot(xs, fn.(xs))
-savefig("sin.png")
