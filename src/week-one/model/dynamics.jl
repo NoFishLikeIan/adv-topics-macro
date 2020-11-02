@@ -1,5 +1,10 @@
 include("detgrowth.jl")
 
+
+function equil_k(model::DetGrowthModel)
+    model.z * (model.β / (1 + model.β))^(1 / (1 - model.α))
+end
+
 """
 Construct function to compute the net capital transition
     and its derivative
@@ -19,9 +24,10 @@ Constructs the difference equation of second order for K:
 function construct_2dk(model::DetGrowthModel)
     F, F_k = construct_netK(model)
 
-    function k_2(k_1::Real, k::Real)::Real
-        return F(k_1) - model.β * F_k(k_1) * (F(k) - k_1)
+    function k_2(k_t::Real, k_t1::Real)::Real
+        return F(k_t1) - model.β * F_k(k_t1) * (F(k_t) - k_t1)
     end
 
     return k_2
 end
+
