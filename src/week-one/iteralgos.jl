@@ -1,4 +1,4 @@
-include("detgrowth.jl")
+include("model/detgrowth.jl")
 include("utils/types.jl")
 include("utils/array.jl")
 

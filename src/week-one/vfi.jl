@@ -3,7 +3,7 @@ include("utils/array.jl")
 include("utils/interp.jl")
 
 include("iteralgos.jl")
-include("detgrowth.jl")
+include("model/detgrowth.jl")
 
 using Plots
 
