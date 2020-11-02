@@ -16,13 +16,19 @@ if false
 
     linear_int = constructlinear(space, evaluations)
     interpolated = linear_int.(thickerspace)
+
+
+    # --- Exercise 4
+    size = 100_000_000
+
+    test = vcat(range(0, 100, length=size), range(99, 0, length=50))
+
+    @time naive_max(test)
+    @time concave_max(test)
 end
 
-# --- Exercise 4
-size = 100_000_000
+xs = collect(range(-2, 2, step=0.1))
+fn(x) = sin(2π * x) - 2 * x
 
-test = vcat(range(0, 100, length=size), range(99, 0, length=50))
-
-@time naive_max(test)
-@time concave_max(test)
-
+plot(xs, fn.(xs))
+savefig("sin.png")
