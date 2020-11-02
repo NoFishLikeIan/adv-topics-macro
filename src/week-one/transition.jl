@@ -1,22 +1,26 @@
-using Random, Distributions
+using Random, Distributions, Plots
 
-Random.seed!(11148705)
+# Random.seed!(11148705)
 
 include("model/detgrowth.jl")
 include("model/dynamics.jl")
 include("utils/types.jl")
 
-function shooting(k_start::Real, k_end::Real, fn_k2::Function, ε::Real, steps::Int)::RealArray
+function shooting(
+    k_start::Real, k_end::Real, fn_k2::Function;
+    size_grid::Int=5000, steps::Int=200, ε::Real=0.01)::Union{RealArray,Nothing}
+
     k_path = zeros(steps + 1)
     k_path[1] = k_start
 
-    while abs(k_path[end] - k_end) > ε
+    k_grid = range(0, k_start * 2, length=size_grid)
 
-        k_t1 = rand(TruncatedNormal(k_start, 1, 0, Inf))
+    for k_t1 in k_grid
         
         k_path[2] = k_t1
 
-        for i in 3:steps
+        for i in 3:length(k_path)
+
             k_t2 = fn_k2(k_path[i - 2], k_path[i - 1])
 
             if k_t2 < 0 break end
@@ -24,27 +28,41 @@ function shooting(k_start::Real, k_end::Real, fn_k2::Function, ε::Real, steps::
             k_path[i] = k_t2 
         end
 
+        if abs(k_path[end] - k_end) < ε
+            return k_path
+        end
+
     end
 
-    return k_path
+    return nothing
+
 end 
 
-function compute_transition(first::DetGrowthModel, last::DetGrowthModel, steps::Int, mode::String)
+function compute_transition(first::DetGrowthModel, last::DetGrowthModel, mode::String)
     k_start = equil_k(first)
-    k_end = equil_k(last)
 
     fn_k2 = construct_2dk(last)
 
-    if mode == "shooting"
-        return shooting(k_start, k_end, fn_k2, 0.01, steps)
+    construct_path = mode == "shooting" ? shooting : shooting
 
-    else
-        throw(ErrorException("Not implemented mode, $mode"))
-    end
+    equils = equil_k(last, unique=false)
+
+    print("Found ", length(equils), " equilibria! $equils\n\n")
+
+    return [construct_path(k_start, k_end, fn_k2) for k_end in equils]
+
 
 end
 
-first = DetGrowthModel(0.9, 0.5, 1., 0.01, 1_000)
-last = DetGrowthModel(0.9, 0.5, 2., 0.01, 1_000)
+alpha = 0.5
+beta = 0.9
 
-path = compute_transition(first, last, 200, "shooting")
+first = DetGrowthModel(beta, alpha, 1., 0.01, 1_000)
+last = DetGrowthModel(beta, alpha, 2., 0.01, 1_000)
+
+path = compute_transition(first, last, "shooting")
+
+# plot(path[1])
+plot(path[2])
+
+savefig("plots/transition.png")
