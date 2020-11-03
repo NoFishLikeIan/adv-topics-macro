@@ -314,3 +314,5 @@ TSWLatexianTemp*
 
 ps 
 *.tex
+
+.vscode

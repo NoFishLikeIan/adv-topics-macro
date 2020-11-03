@@ -2,8 +2,6 @@ include("model/detgrowth.jl")
 include("utils/types.jl")
 include("utils/array.jl")
 
-using Debugger
-
 
 asint(x::Real)::Int = trunc(Int, x)
 
