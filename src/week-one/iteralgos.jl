@@ -7,7 +7,7 @@ using Debugger
 
 asint(x::Real)::Int = trunc(Int, x)
 
-function naive_iteration(model::DetGrowthModel, u_matrix, policy_vec::RealArray, concave=false)
+function naive_iteration!(model::DetGrowthModel, u_matrix, policy_vec::RealArray, concave=false)
 
     maximizer = concave ? concave_max : naive_max
     
@@ -31,7 +31,7 @@ function naive_iteration(model::DetGrowthModel, u_matrix, policy_vec::RealArray,
     return iterate
 end
 
-function monotone_iteration(model::DetGrowthModel, u_matrix, policy_vec::RealArray, concave=false)
+function monotone_iteration!(model::DetGrowthModel, u_matrix, policy_vec::RealArray, concave=false)
 
     maximizer = concave ? concave_max : naive_max
         

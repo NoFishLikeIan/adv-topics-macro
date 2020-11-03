@@ -40,12 +40,12 @@ function solve_value_function(
     V_i = copy(V_0)
     policy_vec = -1 * ones(model.k_size)
 
-    iter_fn = monotone ?  monotone_iteration(model, u_matrix, policy_vec, concave) : naive_iteration(model, u_matrix, policy_vec, concave)
+    iter_fn! = monotone ?  monotone_iteration!(model, u_matrix, policy_vec, concave) : naive_iteration!(model, u_matrix, policy_vec, concave)
 
     print("Starting iterations...\n")
 
     while true
-        V_iter = iter_fn(V_i)
+        V_iter = iter_fn!(V_i)
 
         if distance(V_iter, V_i) < model.ε  break end
 
