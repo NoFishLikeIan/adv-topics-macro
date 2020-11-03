@@ -18,7 +18,7 @@ linear_int = constructlinear(space, evaluations)
 interpolated = linear_int.(thickerspace)
 
 plot(thickerspace, interpolated, title="Interpolated exponential", label="exp(x)", lw=2)
-savefig("src/week-one/plots/linear_interpolation.png")
+savefig("src/week-one/solutions/plots/linear_interpolation.png")
 
 # --- Exercise 4
 size = 100_000_000

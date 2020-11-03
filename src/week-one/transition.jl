@@ -121,5 +121,5 @@ for method in ["shooting", "inverse shooting", "system"]
 
     plot(path[2], title="Transition path", label="k", lw=2)
 
-    savefig("src/week-one/plots/transition_$method.png")
+    savefig("src/week-one/solutions/plots/transition_$method.png")
 end
