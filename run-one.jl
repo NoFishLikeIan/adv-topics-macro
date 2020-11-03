@@ -1,7 +1,4 @@
-using Pkg
-
-Pkg.activate(".")
-Pkg.instantiate() # this will install the packages listed in Project.toml
+include("init.jl")
 
 # Runs excercise 1
 include("src/week-one/vfi.jl")
