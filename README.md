@@ -17,3 +17,7 @@ Then run as,
 ```julia
 include("src/week-one/vfi.jl")
 ```
+
+## Week one
+
+The week one files can be found under `src/week-one`. The script ordering of running is,
