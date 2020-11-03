@@ -1,6 +1,12 @@
+using Printf, ForwardDiff
+
 mid(a, b) = 0.5 * (a + b)
 
-function bisection(f, a::Real, b::Real, ε::Real=.01, max_iter::Int=1000)
+notdone(max_iter) = throw(ErrorException("Could not find a solution in $max_iter iterations"))
+
+function bisection(f::Function, a::Real, b::Real; 
+    ε::Real=.01, max_iter::Int=1000)::Real
+
     inter = b - a
 
     while sign(f(a)) == sign(f(b)) 
@@ -22,17 +28,74 @@ function bisection(f, a::Real, b::Real, ε::Real=.01, max_iter::Int=1000)
 
         c = mid(a, b)
 
-        if i > max_iter break end
+        if i > max_iter notdone(max_iter) end
     end
 
     return c
 end
 
-function newton(f, a::Real, b::Real, ε::Real=.01, max_iter::Int=1000)
+function newton(f::Function, a::Real, b::Real;
+    ε::Real=.01, max_iter::Int=1000)::Real
 
+    x = rand() * (b - a) + a
+    i = 0
+
+    g(x) = ForwardDiff.derivative(f, x)
+
+    while abs(f(x)) > ε
+        x = x - f(x) / g(x)
+        i += 1
+        if i > max_iter notdone(max_iter) end
+    end
+
+    return x
 end
 
+function secant(f::Function, a::Real, b::Real;
+    ε::Real=.01, max_iter::Int=1000)
+    prev_x = rand() * (b - a) + a
+    prev_fx = f(prev_x)
 
-fn(x) =  sin(2π * x) - 2 * x
+    x = rand() * (b - a) + a
+    i = 0
 
-c = bisection(fn, 5, 6)
+    while abs(f(x)) > ε
+        f_x = f(x)
+        Δf = f_x - prev_fx
+        Δx = x - prev_x 
+
+        new_x = x - f_x * (Δx / Δf)
+
+        prev_x = x
+        prev_fx = f_x
+
+        x = new_x
+
+        i += 1
+        if i > max_iter notdone(max_iter) end
+    end
+
+    return x
+end
+
+functions = [
+    [x -> sin(2π * x) - 2 * x, "sin(2π x) - 2x"],
+    [x -> 2π * x - 2 * x, "2π x - 2x"],
+    [x -> 2π * x - x / 2, "2π x - x/2"]
+]
+
+
+for (fn, body) in functions
+
+    print("-- Evaluating: ", body, "\n")
+
+    @printf(
+        "
+        Bisection: %.3f, \n
+        Newton: %.3f, \n 
+        Secant: %.3f \n
+        ------ \n
+        ", 
+        bisection(fn, -2, 2), newton(fn, -2, 2), secant(fn, -2, 2)
+    )
+end

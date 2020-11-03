@@ -1,4 +1,4 @@
-include("detgrowth.jl")
+include("model/detgrowth.jl")
 include("utils/types.jl")
 include("utils/array.jl")
 
@@ -7,16 +7,14 @@ using Debugger
 
 asint(x::Real)::Int = trunc(Int, x)
 
-function naive_iteration(model::DetGrowthModel, u_matrix, policy_vec::RealArray, concave=false, howard=false)
+function naive_iteration(model::DetGrowthModel, u_matrix, policy_vec::RealArray, concave=false)
 
     maximizer = concave ? concave_max : naive_max
     
     function iterate(V_i::RealArray)::RealArray
         V_iter = copy(V_i)
 
-        factor = howard ? 2. : 1.
-
-        H = u_matrix .+ (factor * model.β) * V_i'
+        H = u_matrix .+ model.β * V_i'
         
         for (k_idx, h_row) in enumerate(eachrow(H))
 
@@ -33,7 +31,7 @@ function naive_iteration(model::DetGrowthModel, u_matrix, policy_vec::RealArray,
     return iterate
 end
 
-function monotone_iteration(model::DetGrowthModel, u_matrix, policy_vec::RealArray, concave=false, howard=false)
+function monotone_iteration(model::DetGrowthModel, u_matrix, policy_vec::RealArray, concave=false)
 
     maximizer = concave ? concave_max : naive_max
         
@@ -42,9 +40,7 @@ function monotone_iteration(model::DetGrowthModel, u_matrix, policy_vec::RealArr
 
         prev = 1
 
-        factor = howard ? 2. : 1.
-
-        H = u_matrix .+ (factor * model.β) * V_i'
+        H = u_matrix .+ model.β * V_i'
         
         for (k_idx, h_row) in enumerate(eachrow(H))
 
