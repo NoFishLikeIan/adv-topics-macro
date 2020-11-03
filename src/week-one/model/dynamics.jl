@@ -39,6 +39,8 @@ function construct_2dk(model::DetGrowthModel)
     F, F_k, _ = construct_netK(model)
 
     function k_2(k_t::Real, k_t1::Real)::Real
+        if (k_t < 0 || k_t1 < 0) return -Inf end
+
         F(k_t1) - model.β * F_k(k_t1) * (F(k_t) - k_t1)
     end
 

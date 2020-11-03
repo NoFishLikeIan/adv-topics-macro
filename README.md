@@ -17,3 +17,11 @@ Then run as,
 ```julia
 include("src/week-one/vfi.jl")
 ```
+
+## Week one
+
+The week one files can be found under `src/week-one`. One can run all the script from week `i`, by running,
+
+```
+julia run-$i.jl
+```
