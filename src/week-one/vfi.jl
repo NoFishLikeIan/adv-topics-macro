@@ -6,8 +6,7 @@ include("iteralgos.jl")
 include("model/detgrowth.jl")
 include("model/dynamics.jl")
 
-using LinearAlgebra
-using Plots
+using LinearAlgebra, Plots, Printf
 
 model = DetGrowthModel(0.9, 0.5, 1., 0.01, 1_000)
 
@@ -69,6 +68,8 @@ function solve_value_function(
         V_i = V_iter
     end
 
+    print("...done!\n")
+
     evaluations = [k[asint(p)] for p in policy_vec]
 
     
@@ -78,24 +79,16 @@ function solve_value_function(
 
 end
 
-printpolicy(V, policy) = print(V[2:5], "-", policy(0.5), "-", policy(1), "\n\n")
-
 
 print("Simple\n")
 @time V, policy = solve_value_function(model)
-printpolicy(V, policy)
-
 
 print("Monotone\n")
 @time V, policy = solve_value_function(model, monotone=true)
-printpolicy(V, policy)
-
 
 print("Concave\n")
 @time V, policy = solve_value_function(model, concave=true)
-printpolicy(V, policy)
-
 
 print("Howard\n")
 @time V, policy = solve_value_function(model, howard=true)
-printpolicy(V, policy)
+

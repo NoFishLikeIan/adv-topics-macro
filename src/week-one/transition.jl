@@ -40,7 +40,8 @@ function shooting(
 
 end 
 
-
+function system(k_start::Real, k_end::Real, fn_k2::Function)::RealArray
+end
 
 function compute_transition(first::DetGrowthModel, last::DetGrowthModel, mode::String)::Array{RealArray}
     k_start = equil_k(first)
@@ -52,7 +53,6 @@ function compute_transition(first::DetGrowthModel, last::DetGrowthModel, mode::S
     elseif mode == "inverse shooting"
         construct_path = (f(start, last, fn) = shooting(last, start, fn))
     end
-
 
     equils = equil_k(last, unique=false)
 
