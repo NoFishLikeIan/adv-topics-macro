@@ -77,25 +77,3 @@ function secant(f::Function, a::Real, b::Real;
 
     return x
 end
-
-functions = [
-    [x -> sin(2π * x) - 2 * x, "sin(2π x) - 2x"],
-    [x -> 2π * x - 2 * x, "2π x - 2x"],
-    [x -> 2π * x - x / 2, "2π x - x/2"]
-]
-
-
-for (fn, body) in functions
-
-    print("-- Evaluating: ", body, "\n")
-
-    @printf(
-        "
-        Bisection: %.3f, \n
-        Newton: %.3f, \n 
-        Secant: %.3f \n
-        ------ \n
-        ", 
-        bisection(fn, -2, 2), newton(fn, -2, 2), secant(fn, -2, 2)
-    )
-end

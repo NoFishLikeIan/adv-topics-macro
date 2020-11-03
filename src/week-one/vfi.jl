@@ -92,3 +92,13 @@ print("Concave\n")
 print("Howard\n")
 @time V, policy = solve_value_function(model, howard=true)
 
+
+# Plotting
+
+k_grid = collect(range(0.01, equil_k(model) + 1, length=model.k_size))
+plot(k_grid, V, title="Value function", label="V(k)", lw=2)
+savefig("src/week-one/plots/value.png")
+
+
+plot(k_grid, policy.(k_grid), title="Policy function", label="k'(k)", lw=2)
+savefig("src/week-one/plots/policy.png")
