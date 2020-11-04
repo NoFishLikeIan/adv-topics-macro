@@ -22,4 +22,17 @@ function Base.getindex(P::Partition, i::Int)
 
 end
 
+currygetindex(P::Partition) = (z -> Base.getindex(P, z))
+
 distance(P::Partition)::Real = (P.steps[end] - P.steps[end - 1]) / 2
+
+"""
+Computes the row of the exact partition. If partition not found, returns 0
+"""
+function get_row(P::Partition, z::Real)
+    for (i, row_z) in enumerate(P.steps)
+        if isapprox(row_z, z) return i end
+    end
+
+    return 0
+end
