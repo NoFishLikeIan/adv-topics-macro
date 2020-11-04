@@ -17,7 +17,7 @@ ar = Process(
 )
 
 # -- Partition variables
-N = 50
+N = 3_000
 m = 3
 
 
@@ -30,7 +30,7 @@ T = 400
 plot()
 
 for i in 1:runs
-    @time z = discrete_sim(P, partition, T; drop=0)
+    @time local z = discrete_sim(P, partition, T; drop=0)
 
     c = get(ColorSchemes.rainbow, i ./ runs)
     plot!(z, linewidth=2, label="It-$i")
