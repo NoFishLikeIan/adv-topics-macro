@@ -4,4 +4,4 @@ Random.seed!(132)
 
 include("init.jl")
 
-include("src/week-two/markov/discretization.jl")
+include("src/week-two/ar-markov.jl")

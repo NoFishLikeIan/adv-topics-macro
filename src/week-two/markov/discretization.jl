@@ -30,18 +30,5 @@ function tauchen(proc::Process, N::Int, m::Int; mode="equi")
         P[:, i] = f.(partition) - b.(partition)
     end
 
-    return P
+    return P, partition
 end
-
-σ = 1
-ρ = 0.7
-N = 5
-m = 3
-
-ar = Process(
-    Normal(0, σ^2 / (1 - ρ^2)),
-    z -> ρ * z,
-    Normal(0, (1 - ρ^2)^2)
-)
-
-P = tauchen(ar, N, m)
