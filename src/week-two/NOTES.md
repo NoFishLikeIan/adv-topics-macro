@@ -170,3 +170,22 @@ In this case the mapping is,
 $$
 x = \left(y \mapsto -1 + \frac{2(y-a)}{b-a} \right)
 $$
+
+# Problem set 2
+
+## a.
+
+Given an *AR(1)* process,
+
+$$
+z_{t+1} = \rho \ z_t + (1- \rho^2) \ \epsilon_{t+1}
+$$
+
+Then, 
+
+$$
+V[z_{t+1}] = \rho^2 \ V[z_t] +  (1- \rho^2)^2 \cdot \sigma^2\\
+V_z = \rho^2\cdot V_z +   (1- \rho^2)^2 \cdot \sigma^2 \\
+ (1- \rho^2) \cdot  V_z = (1- \rho^2)^2 \cdot \sigma^2 \\
+ V_z =  (1- \rho^2) \cdot \sigma^2
+$$
