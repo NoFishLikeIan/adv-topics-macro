@@ -1,4 +1,4 @@
-using LinearAlgebra, Distributions, Random
+using LinearAlgebra, Distributions, Random, StatsBase
 
 include("markov-types.jl")
 
@@ -64,4 +64,16 @@ function discrete_sim(markov::MarkovDiscrete;
 
     return currygetindex(markov.S).(evolution_jdx)
     
+end
+
+function summary_stats(markov::MarkovDiscrete)
+    path = discrete_sim(markov)
+
+    est = Dict(
+        "μ" => mean(path),
+        "ν" => var(path),
+        "ρ" => autocor(path)
+    )
+
+    return est
 end

@@ -5,6 +5,7 @@ include("markov/simulation.jl")
 include("markov/markov-types.jl")
 
 plot_path = "src/week-two/solutions/plots/"
+do_plot = false
 
 # -- Process variables
 σ = 1
@@ -17,26 +18,34 @@ ar = Process(
 )
 
 # -- Partition variables
-N = 5
+N = 3_000
 m = 3
 
 
 P, S = tauchen(ar, N, m)
 markov = MarkovDiscrete(P, S)
 
-# -- Plot a number of run simulations
-runs = 4
-T = 400
+stats = summary_stats(markov)
 
-plot()
+print("μ: ", stats["μ"], "\n")
+print("ν: ", stats["ν"], "\n")
 
-for i in 1:runs
-    @time local z = discrete_sim(markov; T=T, drop=0)
+plot(stats["ρ"], linewidth=2, label="Autocorrelation")
+savefig("$plot_path/autocorr.png")
 
-    c = get(ColorSchemes.rainbow, i ./ runs)
-    plot!(z, linewidth=2, label="It-$i")
+if do_plot
+    # -- Plot a number of run simulations
+    runs = 4
+    T = 400
+
+    plot()
+
+    for i in 1:runs
+        @time local z = discrete_sim(markov; T=T, drop=0)
+
+        c = get(ColorSchemes.rainbow, i ./ runs)
+        plot!(z, linewidth=2, label="It-$i")
+    end
+
+    savefig("$plot_path/ar-simulation_$N.png")
 end
-
-savefig("$plot_path/ar-simulation_$N.png")
-
-
