@@ -2,7 +2,7 @@ using Printf, ForwardDiff
 
 mid(a, b) = 0.5 * (a + b)
 
-notdone(max_iter) = throw(ErrorException("Could not find a solution in $max_iter iterations"))
+notdone(max_iter) = error("Could not find a solution in $max_iter iterations")
 
 function bisection(f::Function, a::Real, b::Real; 
     ε::Real=.01, max_iter::Int=1000)::Real

@@ -49,7 +49,7 @@ function discrete_sim(markov::MarkovDiscrete;
     T::Int=5000,
     drop::Int=2000)
 
-    if drop > T throw(ErrorException("Variables to drop ($drop) > total ($total)")) end
+    if drop > T error("Variables to drop ($drop) > total ($total)") end
 
     inverse_F = make_inv_F(pseudoF(markov.P))
 

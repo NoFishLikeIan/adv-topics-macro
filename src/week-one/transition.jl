@@ -97,7 +97,7 @@ function compute_transition(first::DetGrowthModel, last::DetGrowthModel, mode::S
         end
         
     else 
-        throw(ErrorException("Mode $mode not implemented"))
+        error("Mode $mode not implemented")
     
     end
 
