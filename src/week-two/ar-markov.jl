@@ -1,11 +1,13 @@
 using Plots, ColorSchemes
 
 include("markov/discretization/tauchen.jl")
+include("markov/discretization/rouwenhorst.jl")
 include("markov/simulation.jl")
 include("markov/markov-types.jl")
 
 plot_path = "src/week-two/solutions/plots/"
 do_plot = false
+do_tauchen = false
 
 # -- Process variables
 σ = 1
@@ -20,15 +22,14 @@ ar = Process(
 )
 
 # -- Partition variables
-N = 3_000
+N = 5
 m = 3
 
 
-P, S = tauchen(ar, N, m)
+P, S = do_tauchen ? tauchen(ar, N, m) : rouwenhorst(ar, N)
 markov = MarkovDiscrete(P, S)
 
 stats = summary_stats(markov)
-
 print("μ: ", stats["μ"], "\n")
 print("ν: ", stats["ν"], "\n")
 
