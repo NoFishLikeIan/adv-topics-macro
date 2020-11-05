@@ -17,11 +17,12 @@ ar = Process(
 )
 
 # -- Partition variables
-N = 3_000
+N = 5
 m = 3
 
 
-P, partition = tauchen(ar, N, m)
+P, S = tauchen(ar, N, m)
+markov = MarkovDiscrete(P, S)
 
 # -- Plot a number of run simulations
 runs = 4
@@ -30,12 +31,12 @@ T = 400
 plot()
 
 for i in 1:runs
-    @time local z = discrete_sim(P, partition, T; drop=0)
+    @time local z = discrete_sim(markov; T=T, drop=0)
 
     c = get(ColorSchemes.rainbow, i ./ runs)
     plot!(z, linewidth=2, label="It-$i")
 end
 
-savefig("$plot_path/ar-simulation.png")
+savefig("$plot_path/ar-simulation_$N.png")
 
 
