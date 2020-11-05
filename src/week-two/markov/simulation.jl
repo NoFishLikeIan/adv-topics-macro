@@ -2,8 +2,6 @@ using LinearAlgebra, Distributions, Random, StatsBase
 
 include("markov-types.jl")
 
-# TODO: Make a Markov struct 
-
 struct MarkovDiscrete
     P::Matrix{Float64}
     S::Partition

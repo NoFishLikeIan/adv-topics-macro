@@ -1,7 +1,8 @@
 using Distributions, Random
 
-include("process.jl")
-include("markov-types.jl")
+include("../process.jl")
+include("../markov-types.jl")
+include("utils.jl")
 
 """
 Discretize a Process based on equidistant points (mode = "equi") or equal probabilities (mode = "imp").
@@ -9,10 +10,9 @@ Discretize a Process based on equidistant points (mode = "equi") or equal probab
 function tauchen(proc::Process, N::Int, m::Int; mode="equi")
     F = cdf(proc)
 
-    upper = m * sqrt(var(proc))
-    lower = -upper
+    ψ = m * sqrt(var(proc))
     
-    partition = Partition(collect(range(lower, upper, length=N)))
+    partition = makepartition(ψ, N)
     d = distance(partition)
 
     function scale_f(z::Real) 
@@ -32,3 +32,5 @@ function tauchen(proc::Process, N::Int, m::Int; mode="equi")
 
     return P, partition
 end
+
+

@@ -1,6 +1,6 @@
 using Plots, ColorSchemes
 
-include("markov/discretization.jl")
+include("markov/discretization/tauchen.jl")
 include("markov/simulation.jl")
 include("markov/markov-types.jl")
 
@@ -11,10 +11,12 @@ do_plot = false
 σ = 1
 ρ = 0.7
 
+σ_ϵ = (1 - ρ^2)^2
+
 ar = Process(
     Normal(0, σ^2 / (1 - ρ^2)),
     z -> ρ * z,
-    Normal(0, (1 - ρ^2)^2)
+    Normal(0, σ_ϵ)
 )
 
 # -- Partition variables
