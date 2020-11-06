@@ -5,9 +5,15 @@ include("markov/discretization/rouwenhorst.jl")
 include("markov/simulation.jl")
 include("markov/markov-types.jl")
 
-plot_path = "src/week-two/solutions/plots/"
-do_plot = false
+do_plot = true
 do_tauchen = false
+
+method_class = do_tauchen ? "tauchen" : "rouwenhorst"
+plot_path = "src/week-two/solutions/plots/$method_class/"
+
+# -- Partition variables
+N = 100
+m = 3
 
 # -- Process variables
 σ = 1
@@ -21,10 +27,6 @@ ar = Process(
     Normal(0, σ_ϵ)
 )
 
-# -- Partition variables
-N = 5
-m = 3
-
 
 P, S = do_tauchen ? tauchen(ar, N, m) : rouwenhorst(ar, N)
 markov = MarkovDiscrete(P, S)
@@ -34,7 +36,7 @@ print("μ: ", stats["μ"], "\n")
 print("ν: ", stats["ν"], "\n")
 
 plot(stats["ρ"], linewidth=2, label="Autocorrelation")
-savefig("$plot_path/autocorr.png")
+savefig("$plot_path/autocorr_$N.png")
 
 if do_plot
     # -- Plot a number of run simulations
@@ -49,6 +51,8 @@ if do_plot
         c = get(ColorSchemes.rainbow, i ./ runs)
         plot!(z, linewidth=2, label="It-$i")
     end
+
+    method_class = do_tauchen ? "tauchen" : "rouwenhorst"
 
     savefig("$plot_path/ar-simulation_$N.png")
 end
