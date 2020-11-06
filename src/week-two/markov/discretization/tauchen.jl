@@ -10,9 +10,19 @@ function imp_tauch(proc::Process, N::Int)
 
     b = Π.(collect(1:N - 1) / N)
 
+    # FIXME: Need to compute the z
     partition = Partition(b)
 
-    transition(z) = (bj, bj_1) -> F((b - proc.evol(z)) / σ_ϵ(proc)) 
+    transition(z) = (bj, bj_1) -> F((bj - proc.evol(z)) / σ_ϵ(proc)) - F((bj_1 - proc.evol(z)) / σ_ϵ(proc))
+
+    P = zeros((N, N))
+
+    for i in 1:N
+        f = transition(partition[i])
+        P[:, i] = [f(partition[i], partition[i - 1]) for i in 1:N]
+    end
+
+    return P, partition
 
 end
 
@@ -52,4 +62,4 @@ proc = Process(
     Normal(0, (1 - ρ^2)^2)
 )
 
-P, S = tauchen(proc, 5)
+P, S = imp_tauch(proc, 5)
