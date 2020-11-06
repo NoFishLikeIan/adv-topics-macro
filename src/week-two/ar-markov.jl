@@ -22,17 +22,15 @@ param_space = Base.product(N_sp, ρ_sp, do_tauchen_sp)
 
 for (N, ρ, do_tauchen) in param_space
     method_class = do_tauchen ? "tauchen" : "rouwenhorst"
-
-    σ_ϵ = (1 - ρ^2)^2
-
+    
     ar = Process(
         Normal(0, σ^2 / (1 - ρ^2)),
         z -> ρ * z,
-        Normal(0, σ_ϵ)
+        Normal(0, (1 - ρ^2)^2)
     )
 
     if do_tauchen
-        P, S = tauchen(ar, N, m)
+        P, S = tauchen(ar, N; m=m)
     else
         P, S = try_n(() -> rouwenhorst(ar, N),
             MoM_attempts, StatsBase.ConvergenceException;
