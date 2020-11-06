@@ -2,6 +2,8 @@ using LinearAlgebra, Distributions, Random, StatsBase
 
 include("markov-types.jl")
 
+# TODO: Use stationary distribution to compute the moments
+
 struct MarkovDiscrete
     P::Matrix{Float64}
     S::Partition
