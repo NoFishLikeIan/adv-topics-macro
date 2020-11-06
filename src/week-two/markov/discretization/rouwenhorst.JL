@@ -1,4 +1,4 @@
-using Optim, LinearAlgebra
+using Optim, LinearAlgebra, StatsBase
 
 include("utils.jl")
 
@@ -72,6 +72,10 @@ function rouwenhorst(proc::Process, N::Int; x0=[3., 0.5, 0.5])
         return colnormalized(P(p, q)), makepartition(ψ, N)
     
     else 
-        error("Method of moments matching did not converge")
+        throw(
+            StatsBase.ConvergenceException(
+                Optim.iterations(res)
+            )
+        )
     end
 end
