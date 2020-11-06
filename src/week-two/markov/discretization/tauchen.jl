@@ -4,10 +4,22 @@ include("../process.jl")
 include("../markov-types.jl")
 include("utils.jl")
 
+function imp_tauch(proc::Process, N::Int)
+    Π = quantile(proc)
+    F = cdf(proc)
+
+    b = Π.(collect(1:N - 1) / N)
+
+    partition = Partition(b)
+
+    transition(z) = (bj, bj_1) -> F((b - proc.evol(z)) / σ_ϵ(proc)) 
+
+end
+
 """
 Discretize a Process based on equidistant points (mode = "equi") or equal probabilities (mode = "imp").
 """
-function tauchen(proc::Process, N::Int, m::Int; mode="equi")
+function tauchen(proc::Process, N::Int; mode="equi", m::Int=3)
     F = cdf(proc)
 
     ψ = m * sqrt(var(proc))
@@ -15,22 +27,29 @@ function tauchen(proc::Process, N::Int, m::Int; mode="equi")
     partition = makepartition(ψ, N)
     d = distance(partition)
 
-    function scale_f(z::Real) 
-        forward = z_p::Real -> F((z + d - proc.evol(z_p)) / var(proc.error))
-        backward = z_p::Real -> F((z - d - proc.evol(z_p)) / var(proc.error))
-
-        return forward, backward
-    end
+    transition(z) = (z_p ->
+    F((z + d - proc.evol(z_p)) / σ_ϵ(proc)) 
+    - F((z - d - proc.evol(z_p)) / σ_ϵ(proc)))
     
-
     P = zeros((N, N))
 
     for i in 1:N
-        f, b = scale_f(partition[i])
-        P[:, i] = f.(partition) - b.(partition)
+        f = transition(partition[i])
+        P[:, i] = f.(partition)
     end
 
     return P, partition
 end
 
 
+N = 5
+σ = 1
+ρ = 0.7
+
+proc = Process(
+    Normal(0, σ^2 / (1 - ρ^2)),
+    z -> ρ * z,
+    Normal(0, (1 - ρ^2)^2)
+)
+
+P, S = tauchen(proc, 5)
