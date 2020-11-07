@@ -13,14 +13,12 @@ MoM_attempts = 3
 
 m = 3
 
-N_sp = [5, 500]
+N_sp = [5, 100]
 ρ_sp = [0.7, 0.99]
-do_tauchen_sp =  [true]
+do_tauchen_sp =  [true, false]
 
 param_space = Base.product(N_sp, ρ_sp, do_tauchen_sp)
 
-N = 5
-ρ = 0.7
 
 for (N, ρ, do_tauchen) in param_space
     method_class = do_tauchen ? "tauchen" : "rouwenhorst"
