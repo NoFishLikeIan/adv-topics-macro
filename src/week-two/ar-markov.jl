@@ -28,7 +28,8 @@ for (N, ρ, do_tauchen) in param_space
     ar = Process(
         Normal(0, std_err),
         z -> ρ * z,
-        Normal(0, 1 - ρ^2)
+        Normal(0, 1 - ρ^2),
+        ρ * std_err^2
     )
 
     if do_tauchen
