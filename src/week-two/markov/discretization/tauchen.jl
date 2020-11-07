@@ -37,29 +37,19 @@ function tauchen(proc::Process, N::Int; mode="equi", m::Int=3)
     partition = makepartition(ψ, N)
     d = distance(partition)
 
-    transition(z) = (z_p ->
-    F((z + d - proc.evol(z_p)) / σ_ϵ(proc)) 
-    - F((z - d - proc.evol(z_p)) / σ_ϵ(proc)))
-    
+
+    f(z_row) = z_col -> F((z_row + d - proc.evol(z_col)) / σ_ϵ(proc))
+    b(z_row) = z_col -> F((z_row - d - proc.evol(z_col)) / σ_ϵ(proc))
+
     P = zeros((N, N))
 
-    for i in 1:N
-        f = transition(partition[i])
-        P[:, i] = f.(partition)
+    P[:, 1] = f(partition[1]).(partition)
+
+    for i in 2:(N - 1)
+        P[:, i] = f(partition[i]).(partition) - b(partition[i]).(partition)
     end
+
+    P[:, N] = 1 .- b(partition[N]).(partition)
 
     return P, partition
 end
-
-
-N = 5
-σ = 1
-ρ = 0.7
-
-proc = Process(
-    Normal(0, σ^2 / (1 - ρ^2)),
-    z -> ρ * z,
-    Normal(0, (1 - ρ^2)^2)
-)
-
-P, S = imp_tauch(proc, 5)
