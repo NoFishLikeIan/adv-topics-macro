@@ -48,8 +48,8 @@ function make_inv_F(pseudoF::Matrix{Float64})
 end
 
 function discrete_sim(markov::MarkovDiscrete; 
-    T::Int=5000,
-    drop::Int=2000)
+    T::Int=2000,
+    drop::Int=500)
 
     if drop > T error("Variables to drop ($drop) > total ($total)") end
 

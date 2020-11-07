@@ -12,21 +12,25 @@ MoM_attempts = 3
 
 
 m = 3
-σ = 1
 
-N_sp = [5, 100]
+N_sp = [5, 500]
 ρ_sp = [0.7, 0.99]
-do_tauchen_sp =  [false, true]
+do_tauchen_sp =  [true]
 
 param_space = Base.product(N_sp, ρ_sp, do_tauchen_sp)
 
+N = 5
+ρ = 0.7
+
 for (N, ρ, do_tauchen) in param_space
     method_class = do_tauchen ? "tauchen" : "rouwenhorst"
+
+    std_err = sqrt(1 - ρ^2)
     
     ar = Process(
-        Normal(0, σ^2 / (1 - ρ^2)),
+        Normal(0, std_err),
         z -> ρ * z,
-        Normal(0, (1 - ρ^2)^2)
+        Normal(0, 1 - ρ^2)
     )
 
     if do_tauchen
@@ -49,8 +53,8 @@ for (N, ρ, do_tauchen) in param_space
 
     if do_plot
         # -- Plot a number of run simulations
-        runs = 4
-        T = 400
+        runs = 1
+        T = 1500
 
         plot(title="Markov simulation with ($N, $ρ) for $method_class")
 
