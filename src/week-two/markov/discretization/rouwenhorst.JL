@@ -103,6 +103,8 @@ function rouwenhorst_analy(proc::Process, N::Int)
     Vz = var(proc)
     corr = autocor(proc)
 
+    q0 = 0.8 * rand(Uniform(.9, 1.1))
+
     if Ez == 0
         ψ, p, q = zero_process(Vz, corr, N)
     else
@@ -118,7 +120,7 @@ function rouwenhorst_analy(proc::Process, N::Int)
             return ψ(q)^2 * (1 + four_s(q) * N_scale) - Vz
         end
     
-        q = find_zero(f, 0.5)
+        q = find_zero(f, q0)
     end
     
     return colnormalized(P_N(N)(p(q), q)), makepartition(ψ(q), N)
@@ -134,21 +136,3 @@ function rouwenhorst(proc::Process, N::Int; numerical=false, x0=[5., 0.5, 0.5], 
     end
 
 end
-
-N = 3
-ρ = 0.7
-μ = 0
-σ = 1
-
-z = Process(
-    LogNormal(μ, σ / √(1 - ρ^2)),
-    z -> z^ρ,
-    Normal(μ, σ))
-
-P, S = rouwenhorst(z, N)
-markov = MarkovDiscrete(P, S)
-
-stats = summary_stats(markov)
-print("Summary for ρ = $ρ and N = $N\n")
-print("μ: ", stats["μ"], "\n")
-print("ν: ", stats["ν"], "\n")

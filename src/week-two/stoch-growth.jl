@@ -4,20 +4,23 @@ include("markov/process.jl")
 include("markov/simulation.jl")
 include("markov/discretization/rouwenhorst.jl")
 
-N = 3
-ρ = 0.7
-μ = 0
-σ = 1
+include("../week-one/model/detgrowth.jl")
 
-z = Process(
-    LogNormal(μ, σ / √(1 - ρ^2)),
-    z -> z^ρ,
-    Normal(μ, σ))
+function make_z_proc(μ::Float64, σ::Float64, N::Int, ρ::Float64)::MarkovDiscrete
+    μ_y, σ_y = 0., σ / √(1 - ρ^2)
 
-P, S = rouwenhorst(z, N)
-markov = MarkovDiscrete(P, S)
+    z = Process(
+        LogNormal(μ_y, σ_y),
+        z -> z^ρ,
+        Normal(μ, σ)
+    )
 
-stats = summary_stats(markov)
-print("Summary for ρ = $ρ and N = $N\n")
-print("μ: ", stats["μ"], "\n")
-print("ν: ", stats["ν"], "\n")
+    P, S = rouwenhorst(z, N; numerical=false)
+    markov = MarkovDiscrete(P, S)
+
+    return markov
+end
+
+markov = make_z_proc(0, 1, 3, 0.7)
+model = StochGrowthModel(.9, .5, markov, .01, 1_000)
+
