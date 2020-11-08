@@ -91,7 +91,7 @@ function zero_process(Vz::Float64, corr::Float64, N::Int)
     
     # For p = q, s = 0.5, and 4s(1-s) = 1.
     # Write ψ and p as a functional for consistency
-    ψ = (_) -> sqrt(Vz * (N - 1))
+    ψ = (_) -> √(Vz * (N - 1))
     p = (_) -> q
 
     return ψ, p, q
@@ -140,18 +140,15 @@ N = 3
 μ = 0
 σ = 1
 
-if false
+z = Process(
+    LogNormal(μ, σ / √(1 - ρ^2)),
+    z -> z^ρ,
+    Normal(μ, σ))
 
-    σ_proc = σ / sqrt(1 - ρ^2)
+P, S = rouwenhorst(z, N)
+markov = MarkovDiscrete(P, S)
 
-    z = Process(
-            LogNormal(μ, σ_proc),
-            z -> z^ρ,
-            Normal(μ, σ))
-
-    res = rouwenhorst(z, N; numerical=false)
-end
-
-ar1 = Process(Normal(0, sqrt(1 / (1 - ρ^2))), z -> ρ * z, Normal(0, 1))
-
-P, S = rouwenhorst(ar1, N; numerical=false)
+stats = summary_stats(markov)
+print("Summary for ρ = $ρ and N = $N\n")
+print("μ: ", stats["μ"], "\n")
+print("ν: ", stats["ν"], "\n")

@@ -66,7 +66,7 @@ Consider *AR(1)* for illustration. Note that it has variance, `s^2 / (1 - r^2)`.
 We set 
 
 ```julia
-z_N = m sqrt(s^2 / (1 - r^2))
+z_N = m √(s^2 / (1 - r^2))
 ```
 
 and, if symmetric, `z_1 = -z_N` (note that this depends on the form of the distribution), and take a perfect partition between `z_1` and `z_N`.

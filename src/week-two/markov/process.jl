@@ -10,7 +10,7 @@ end
 Statistics.mean(p::Process) = Statistics.mean(p.dist)
 Statistics.var(p::Process) = Statistics.var(p.dist)
 
-σ_ϵ(p::Process) = sqrt(var(p.error))
+σ_ϵ(p::Process) = √(var(p.error))
 
 cdf(p::Process) = x::Real -> Distributions.cdf(p.dist, x)
 quantile(p::Process) = q::Real -> Distributions.quantile(p.dist, q)

@@ -13,7 +13,7 @@ MoM_attempts = 3
 function run_markov(N::Int, ρ::Float64, do_tauchen::Bool; do_plot=false)
     method_class = do_tauchen ? "tauchen" : "rouwenhorst"
 
-    std_err = sqrt(1 - ρ^2)
+    std_err = √(1 - ρ^2)
     
     ar = Process(
         Normal(0, std_err),

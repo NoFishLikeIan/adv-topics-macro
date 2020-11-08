@@ -32,7 +32,7 @@ Discretize a Process based on equidistant points (mode = "equi") or equal probab
 function tauchen(proc::Process, N::Int; mode="equi", m::Int=3)
     F = cdf(proc)
 
-    ψ = m * sqrt(var(proc))
+    ψ = m * √(var(proc))
     
     partition = makepartition(ψ, N)
     d = distance(partition)

@@ -4,7 +4,7 @@ using Distributions, Random, StatsBase
 σ = 1
 μ = 0
 
-σ_y = σ / sqrt(1 - ρ^2)
+σ_y = σ / √(1 - ρ^2)
 
 N = 10_000_000
 

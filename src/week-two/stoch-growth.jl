@@ -4,18 +4,15 @@ include("markov/process.jl")
 include("markov/simulation.jl")
 include("markov/discretization/rouwenhorst.jl")
 
-N = 50
+N = 3
 ρ = 0.7
 μ = 0
 σ = 1
 
-autocov = exp(0.5 * ((1 + ρ)^2 * σ_y^2 + σ^2)) - exp(σ_y^2)
-
 z = Process(
-    LogNormal(μ, σ / sqrt(1 - ρ^2)),
+    LogNormal(μ, σ / √(1 - ρ^2)),
     z -> z^ρ,
-    Normal(μ, σ),
-    autocov)
+    Normal(μ, σ))
 
 P, S = rouwenhorst(z, N)
 markov = MarkovDiscrete(P, S)
