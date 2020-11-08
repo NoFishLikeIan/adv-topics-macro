@@ -4,5 +4,5 @@ Random.seed!(132)
 
 include("init.jl")
 
-include("src/week-two/ar-markov.jl")
-# include("src/week-two/stoch-growth.jl")
+# include("src/week-two/ar-markov.jl")
+include("src/week-two/stoch-growth.jl")

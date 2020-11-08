@@ -1,4 +1,4 @@
-using Optim, LinearAlgebra, StatsBase, NLsolve
+using Optim, LinearAlgebra, StatsBase, Roots
 
 include("utils.jl")
 
@@ -83,60 +83,75 @@ function rouwenhorst_numerical(proc::Process, N::Int, x0, m)
     end
 end
 
+"""
+Solves the analytical rouwenhorst process for the special case E[z] = 0
+"""
+function zero_process(Vz::Float64, corr::Float64, N::Int)
+    q = (corr + 1) / 2
+    
+    # For p = q, s = 0.5, and 4s(1-s) = 1.
+    # Write ψ and p as a functional for consistency
+    ψ = (_) -> sqrt(Vz * (N - 1))
+    p = (_) -> q
 
+    return ψ, p, q
 
-function rouwenhorst_analy(proc::Process, N::Int, x0, m)
+end
+
+function rouwenhorst_analy(proc::Process, N::Int)
     Ez = mean(proc)
     Vz = var(proc)
     corr = autocor(proc)
 
-    ψ_lb = m * sqrt(var(proc))
+    if Ez == 0
+        ψ, p, q = zero_process(Vz, corr, N)
+    else
+        N_scale = -1 + 1 / (N - 1)
 
-    function f!(F, parameters)
-        ψ, q, p = parameters
-
-        s = (1 - p) / (2 - (p + q))
-
-        four_s = 4 * s * (1 - s)
-
-        F[1] = (q - p) * ψ / (2 - (p + q)) - Ez
-        F[2] = ψ^2 * (1 - four_s - four_s / (N - 1)) - Vz
-        F[3] = p + q - 1 - corr
-
+        p(q) = corr + 1 - q
+        ψ(q) = Ez * (2 - p(q) - q) / (q - p(q))
+        s(q) = (1 - p(q)) / (2 - p(q) - q)
+    
+        four_s(q) = 4 * s(q) * (1 - s(q)) 
+    
+        function f(q)
+            return ψ(q)^2 * (1 + four_s(q) * N_scale) - Vz
+        end
+    
+        q = find_zero(f, 0.5)
     end
-
-    res = mcpsolve(f!, [ψ_lb, 0., 0.], U_BN, x0)
-
-    ψ, q, p = res.zeros
-
-    return colnormalized(P(p, q)), makepartition(ψ, N)
+    
+    return colnormalized(P_N(N)(p(q), q)), makepartition(ψ(q), N)
 
 end
 
-function rouwenhorst(proc::Process, N::Int; method="anal", x0=[5., 0.5, 0.5], m=3)
-    if method == "num"
+function rouwenhorst(proc::Process, N::Int; numerical=false, x0=[5., 0.5, 0.5], m=3)
+    if numerical
         return rouwenhorst_numerical(proc, N, x0, m)
 
     else
-        return rouwenhorst_analy(proc, N, x0, m)
+        return rouwenhorst_analy(proc, N)
     end
 
 end
 
+N = 3
+ρ = 0.7
+μ = 0
+σ = 1
 
 if false
-    N = 3
-    ρ = 0.7
-    μ = 0
-    σ = 1
 
     σ_proc = σ / sqrt(1 - ρ^2)
 
     z = Process(
-        LogNormal(μ, σ_proc),
-        z -> z^ρ,
-        Normal(μ, σ))
+            LogNormal(μ, σ_proc),
+            z -> z^ρ,
+            Normal(μ, σ))
 
-    res = rouwenhorst(z, N; method="anal")
-
+    res = rouwenhorst(z, N; numerical=false)
 end
+
+ar1 = Process(Normal(0, sqrt(1 / (1 - ρ^2))), z -> ρ * z, Normal(0, 1))
+
+P, S = rouwenhorst(ar1, N; numerical=false)
