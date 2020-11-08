@@ -6,21 +6,11 @@ include("markov/simulation.jl")
 include("markov/markov-types.jl")
 include("../comm_utility.jl")
 
-do_plot = true
 plot_path = "src/week-two/solutions/plots/"
 MoM_attempts = 3
 
 
-m = 3
-
-N_sp = [5, 100]
-ρ_sp = [0.7, 0.99]
-do_tauchen_sp =  [true, false]
-
-param_space = Base.product(N_sp, ρ_sp, do_tauchen_sp)
-
-
-for (N, ρ, do_tauchen) in param_space
+function run_markov(N::Int, ρ::Float64, do_tauchen::Bool; plot=false)
     method_class = do_tauchen ? "tauchen" : "rouwenhorst"
 
     std_err = sqrt(1 - ρ^2)
@@ -28,14 +18,13 @@ for (N, ρ, do_tauchen) in param_space
     ar = Process(
         Normal(0, std_err),
         z -> ρ * z,
-        Normal(0, 1 - ρ^2),
-        ρ * std_err^2
+        Normal(0, 1 - ρ^2)
     )
 
     if do_tauchen
         P, S = tauchen(ar, N; m=m)
     else
-        P, S = try_n(() -> rouwenhorst(ar, N),
+        P, S = try_n(() -> rouwenhorst(ar, N, method="num"),
             MoM_attempts, StatsBase.ConvergenceException;
             verbose=true)
     end
@@ -70,4 +59,13 @@ for (N, ρ, do_tauchen) in param_space
 
         end
     end
+end
+
+m = 3
+N_sp = [5, 100]
+ρ_sp = [0.7, 0.99]
+do_tauchen_sp =  [false, true]
+
+for (N, ρ, do_tauchen) in Base.product(N_sp, ρ_sp, do_tauchen_sp)
+    run_markov(N, ρ, do_tauchen; plot=false)
 end
