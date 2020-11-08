@@ -66,8 +66,8 @@ function discrete_sim(markov::MarkovDiscrete;
     
 end
 
-function summary_stats(markov::MarkovDiscrete)
-    path = discrete_sim(markov)
+function summary_stats(markov::MarkovDiscrete; T = 2000)
+    path = discrete_sim(markov; T=T)
 
     est = Dict(
         "μ" => mean(path),

@@ -32,9 +32,10 @@ function run_markov(N::Int, ρ::Float64, do_tauchen::Bool; do_plot=false)
     markov = MarkovDiscrete(P, S)
 
     stats = summary_stats(markov)
-    print("Summary for ρ = $ρ and N = $N, with method = $method_class:\n")
+    print("\nSummary for ρ = $ρ and N = $N, with method = $method_class:\n")
     print("μ: ", stats["μ"], "\n")
     print("ν: ", stats["ν"], "\n")
+    print("ρ: ",  stats["ρ"][2], "\n")
 
     plot(stats["ρ"], linewidth=2, label="ACF", title="Autocorrelation with ($N, $ρ) for $method_class")
     savefig("$plot_path/$method_class/autocorr_N$N-rho$ρ.png")
@@ -64,8 +65,8 @@ end
 m = 3
 N_sp = [5, 100]
 ρ_sp = [0.7, 0.99]
-do_tauchen_sp =  [false]
+do_tauchen_sp =  [false, true]
 
 for (N, ρ, do_tauchen) in Base.product(N_sp, ρ_sp, do_tauchen_sp)
-    run_markov(N, ρ, do_tauchen; do_plot=true)
+    run_markov(N, ρ, do_tauchen; do_plot=false)
 end
