@@ -20,7 +20,7 @@ z = exp.(y[5000:N])
 
 sample_mean = mean(z)
 sample_var = var(z)
-sample_cov = autocov(z, [1])[1]
+sample_cov = StatsBase.autocov(z, [1])[1]
 
 theoretical = LogNormal(μ, σ_y)
 mean_th = mean(theoretical)
@@ -33,4 +33,3 @@ print("
 σ^2: $var_th - $sample_var
 cov: $cov_th - $sample_cov
 ")
-

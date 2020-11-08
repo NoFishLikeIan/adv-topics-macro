@@ -29,7 +29,7 @@ function autocov(p::Process{Normal{Float64}})
     ρ = p.evol(4) / 4
     μ, σ_proc = params(p.dist)
 
-    return ρ * σ_proc
+    return ρ * σ_proc^2
 end
 
 StatsBase.autocor(p::Process) = autocov(p) / var(p)
