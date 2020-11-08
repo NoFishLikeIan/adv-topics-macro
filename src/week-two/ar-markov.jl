@@ -10,7 +10,7 @@ plot_path = "src/week-two/solutions/plots/"
 MoM_attempts = 3
 
 
-function run_markov(N::Int, ρ::Float64, do_tauchen::Bool; plot=false)
+function run_markov(N::Int, ρ::Float64, do_tauchen::Bool; do_plot=false)
     method_class = do_tauchen ? "tauchen" : "rouwenhorst"
 
     std_err = sqrt(1 - ρ^2)
@@ -24,7 +24,7 @@ function run_markov(N::Int, ρ::Float64, do_tauchen::Bool; plot=false)
     if do_tauchen
         P, S = tauchen(ar, N; m=m)
     else
-        P, S = try_n(() -> rouwenhorst(ar, N, method="num"),
+        P, S = try_n(() -> rouwenhorst(ar, N; numerical=false),
             MoM_attempts, StatsBase.ConvergenceException;
             verbose=true)
     end
@@ -64,8 +64,8 @@ end
 m = 3
 N_sp = [5, 100]
 ρ_sp = [0.7, 0.99]
-do_tauchen_sp =  [false, true]
+do_tauchen_sp =  [false]
 
 for (N, ρ, do_tauchen) in Base.product(N_sp, ρ_sp, do_tauchen_sp)
-    run_markov(N, ρ, do_tauchen; plot=false)
+    run_markov(N, ρ, do_tauchen; do_plot=true)
 end
