@@ -39,7 +39,7 @@ function P_N(N)
     return nested_P
 end
 
-function rouwenhorst_numerical(proc::Process, N::Int, x0)
+function rouwenhorst_numerical(proc::Process, N::Int, x0, m)
 
     if N > 100 @warn "Current implementation is too slow for big matrices" end
 
@@ -85,10 +85,12 @@ end
 
 
 
-function rouwenhorst_analy(proc::Process, N::Int, x0)
+function rouwenhorst_analy(proc::Process, N::Int, x0, m)
     Ez = mean(proc)
     Vz = var(proc)
     corr = autocor(proc)
+
+    ψ_lb = m * sqrt(var(proc))
 
     function f!(F, parameters)
         ψ, q, p = parameters
@@ -103,7 +105,7 @@ function rouwenhorst_analy(proc::Process, N::Int, x0)
 
     end
 
-    res = mcpsolve(f!, L_BN, U_BN, x0)
+    res = mcpsolve(f!, [ψ_lb, 0., 0.], U_BN, x0)
 
     ψ, q, p = res.zeros
 
@@ -111,12 +113,12 @@ function rouwenhorst_analy(proc::Process, N::Int, x0)
 
 end
 
-function rouwenhorst(proc::Process, N::Int; method="anal", x0=[5., 0.5, 0.5])
+function rouwenhorst(proc::Process, N::Int; method="anal", x0=[5., 0.5, 0.5], m=3)
     if method == "num"
-        return rouwenhorst_numerical(proc, N, x0)
+        return rouwenhorst_numerical(proc, N, x0, m)
 
     else
-        return rouwenhorst_analy(proc, N, x0)
+        return rouwenhorst_analy(proc, N, x0, m)
     end
 
 end
@@ -130,13 +132,10 @@ if false
 
     σ_proc = σ / sqrt(1 - ρ^2)
 
-    autocov = exp(0.5 * ((1 + ρ)^2 * σ_proc^2 + σ^2)) - exp(σ_proc^2)
-
     z = Process(
         LogNormal(μ, σ_proc),
         z -> z^ρ,
-        Normal(μ, σ),
-        autocov)
+        Normal(μ, σ))
 
     res = rouwenhorst(z, N; method="anal")
 
