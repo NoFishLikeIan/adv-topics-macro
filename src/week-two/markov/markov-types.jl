@@ -36,3 +36,12 @@ function get_row(P::Partition, z::Real)
 
     return 0
 end
+
+function get_closest(P::Partition, z::Real)
+    
+    for (i, boundary) in enumerate(P.steps)
+        if z < boundary
+            return i
+        end
+    end
+end

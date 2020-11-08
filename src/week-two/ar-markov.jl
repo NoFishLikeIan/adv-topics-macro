@@ -17,7 +17,7 @@ function run_markov(N::Int, ρ::Float64, do_tauchen::Bool; do_plot=false)
     
     ar = Process(
         Normal(0, std_err),
-        z -> ρ * z,
+        ρ,
         Normal(0, 1 - ρ^2)
     )
 
@@ -29,7 +29,7 @@ function run_markov(N::Int, ρ::Float64, do_tauchen::Bool; do_plot=false)
             verbose=true)
     end
 
-    markov = MarkovDiscrete(P, S)
+    markov = MarkovDiscrete(P, S, z -> z)
 
     stats = summary_stats(markov)
     print("\nSummary for ρ = $ρ and N = $N, with method = $method_class:\n")
