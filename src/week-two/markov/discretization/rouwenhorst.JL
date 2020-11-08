@@ -39,16 +39,18 @@ function P_N(N)
     return nested_P
 end
 
-function rouwenhorst_numerical(proc::Process, N::Int, x0, m)
+function rouwenhorst_numerical(proc::Process, N::Int, x0, trans::Function)
 
     if N > 100 @warn "Current implementation is too slow for big matrices" end
 
     P = P_N(N)
 
-    function sim_moments(ψ::Float64, p::Float64, q::Float64)
-        S = makepartition(ψ, N)
+    partition_fn = ispositive(proc) ? makepositivepartition :  makepartition
 
-        markov = MarkovDiscrete(colnormalized(P(p, q)), S)
+    function sim_moments(ψ::Float64, p::Float64, q::Float64)
+        S = partition_fn(ψ, N)
+
+        markov = MarkovDiscrete(colnormalized(P(p, q)), S, trans)
 
         sim = discrete_sim(markov)
 
@@ -72,7 +74,7 @@ function rouwenhorst_numerical(proc::Process, N::Int, x0, m)
 
         ψ, p, q = Optim.minimizer(res)
 
-        return colnormalized(P(p, q)), makepartition(ψ, N)
+        return colnormalized(P(p, q)), partition_fn(ψ, N)
     
     else 
         throw(
@@ -122,14 +124,16 @@ function rouwenhorst_analy(proc::Process, N::Int)
     
         q = find_zero(f, q0)
     end
+
+    S = ispositive(proc) ? makepositivepartition(ψ(q), N) :  makepartition(ψ(q), N)
     
-    return colnormalized(P_N(N)(p(q), q)), makepartition(ψ(q), N)
+    return colnormalized(P_N(N)(p(q), q)), S
 
 end
 
 function rouwenhorst(proc::Process, N::Int; numerical=false, x0=[5., 0.5, 0.5], m=3)
     if numerical
-        return rouwenhorst_numerical(proc, N, x0, m)
+        return rouwenhorst_numerical(proc, N, x0, z -> z)
 
     else
         return rouwenhorst_analy(proc, N)

@@ -4,9 +4,10 @@ include("markov-types.jl")
 
 # TODO: Use stationary distribution to compute the moments
 
-struct MarkovDiscrete
+mutable struct MarkovDiscrete
     P::Matrix{Float64}
     S::Partition
+    transformation::Function
 end
 
 """
@@ -62,11 +63,12 @@ function discrete_sim(markov::MarkovDiscrete;
         evolution_jdx[t + 1] = inverse_F(u, evolution_jdx[t])
     end
 
-    return currygetindex(markov.S).(evolution_jdx)
+    sim = currygetindex(markov.S).(evolution_jdx[drop:end])
     
+    return markov.transformation.(sim)
 end
 
-function summary_stats(markov::MarkovDiscrete; T = 2000)
+function summary_stats(markov::MarkovDiscrete; T=10_000)
     path = discrete_sim(markov; T=T)
 
     est = Dict(
