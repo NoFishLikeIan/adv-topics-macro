@@ -8,7 +8,9 @@ struct StochGrowthModel
     z::MarkovDiscrete
     f::Function
     f_prime::Function
+    u::Function
     u_c::Function
+    inv_u_c::Function
 end
 
 function make_z_proc(μ::Float64, σ::Float64, N::Int, ρ::Float64)::MarkovDiscrete
@@ -25,3 +27,4 @@ function make_z_proc(μ::Float64, σ::Float64, N::Int, ρ::Float64)::MarkovDiscr
 
     return markov
 end
+
