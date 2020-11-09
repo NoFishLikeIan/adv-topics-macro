@@ -22,33 +22,42 @@ function policy_solve(
         return u_c(c) -  model.β * E(vals, p_z) * u_c(f(k, prod) - k)
     end
 
-    policy_k = ones(grid_N) 
+    policy_k_matrix = ones(grid_N, length(support_z))
+    
+    for (h, z) in enumerate(support_z)
 
-    for i in 1:max_iter
-        z = zs[i]
+        policy_k = ones(grid_N)
 
-        current_policy = 0.5 * ones(grid_N) # fixes the k = 1, z = 1 bug
+        for i in 1:max_iter
+            #z = zs[i]
 
-        for (j, k_row) in enumerate(k_space)
-            k_prime = current_policy[j]
-                    
-            opt_c = find_zero(c -> euler_diff(c, k_prime, z), .01, verbose=verbose)
+            current_policy = 0.5 * ones(grid_N) # fixes the k = 1, z = 1 bug
 
-            opt_k = f(k_row, z) - opt_c 
-            current_policy[j] = opt_k
+            for (j, k_row) in enumerate(k_space)
+                k_prime = current_policy[j]
+                        
+                opt_c = find_zero(c -> euler_diff(c, k_prime, z), .01, verbose=verbose)
 
-            
+                opt_k = f(k_row, z) - opt_c 
+                current_policy[j] = opt_k
+
+                
+            end
+
+            distance = maximum(abs.(policy_k - current_policy))
+
+            if distance < tol 
+                if verbose print("Found policy in $i iterations (|x - x'| = $distance)") end
+                return current_policy 
+            end 
+
+            policy_k = current_policy
         end
 
-        distance = maximum(abs.(policy_k - current_policy))
+        policy_k_matrix[:, h] = policy_k
 
-        if distance < tol 
-            if verbose print("Found policy in $i iterations (|x - x'| = $distance)") end
-            return current_policy 
-        end 
-
-        policy_k = current_policy
     end
 
     throw(ConvergenceException(max_iter))
+    
 end
