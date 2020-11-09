@@ -13,7 +13,7 @@ function imp_tauch(proc::Process, N::Int)
     # FIXME: Need to compute the z
     partition = Partition(b)
 
-    transition(z) = (bj, bj_1) -> F((bj - proc.evol(z)) / σ_ϵ(proc)) - F((bj_1 - proc.evol(z)) / σ_ϵ(proc))
+    transition(z) = (bj, bj_1) -> F((bj - evol(proc, z)) / σ_ϵ(proc)) - F((bj_1 - evol(proc, z)) / σ_ϵ(proc))
 
     P = zeros((N, N))
 
@@ -38,8 +38,8 @@ function tauchen(proc::Process, N::Int; mode="equi", m::Int=3)
     d = distance(partition)
 
 
-    f(z_row) = z_col -> F((z_row + d - proc.evol(z_col)) / σ_ϵ(proc))
-    b(z_row) = z_col -> F((z_row - d - proc.evol(z_col)) / σ_ϵ(proc))
+    f(z_row) = z_col -> F((z_row + d - evol(proc, z_col)) / σ_ϵ(proc))
+    b(z_row) = z_col -> F((z_row - d - evol(proc, z_col)) / σ_ϵ(proc))
 
     P = zeros((N, N))
 
