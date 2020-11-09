@@ -79,3 +79,18 @@ function summary_stats(markov::MarkovDiscrete; T=10_000)
 
     return est
 end
+
+function p_cond(markov::MarkovDiscrete, z::Float64)::Array{Float64}
+    return markov.P[get_row(support(markov), z), :]
+end
+
+function support(markov::MarkovDiscrete)::Partition
+    return Partition(markov.transformation.(markov.S))
+end
+
+"""
+Computes the discrete expectation
+"""
+function E(vals::Array{Float64}, density::Array{Float64})::Float64
+    return sum(vals .* density)
+end
