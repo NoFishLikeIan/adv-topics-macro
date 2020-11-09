@@ -12,13 +12,14 @@ function policy_solve(
     support_z = support(model.z)
     
     k_space = Partition(collect(range(0.1, 5, length=grid_N)))
+    get_k = (k::Real) -> get_closest(k_space, k)
 
-    function euler_diff(k::Float64, prod::Float64)::Float64
+    function euler_diff(k::Float64, prod::Float64, k_prime::Float64)::Float64
 
         vals = 1. .+ f_prime.(k, support_z)
         p_z = p_cond(model.z, prod)
 
-        return inv_u_c(model.β * E(vals, p_z) * u_c(f(k, prod) - k))
+        return inv_u_c(model.β * E(vals, p_z) * u_c(f(k, prod) - k_prime))
     end
 
     policy_k_matrix = zeros(grid_N, length(support_z))
@@ -30,12 +31,14 @@ function policy_solve(
         euler_error = ones(grid_N) * Inf
 
         for i in 1:max_iter
-            current_policy = 0.5 * ones(grid_N) # fixes the k = 1, z = 1 bug
+            current_policy = copy(k_space.steps) # fixes the k = 1, z = 1 bug
 
             for (j, k_row) in enumerate(k_space)
                 k_prime = current_policy[j]
+
+                k_double_prime = current_policy[get_k(k_prime)]
                     
-                opt_c = euler_diff(k_prime, z)
+                opt_c = euler_diff(k_prime, z, k_double_prime)
 
                 opt_k = f(k_row, z) - opt_c 
                 current_policy[j] = opt_k
@@ -47,7 +50,9 @@ function policy_solve(
             if distance < tol 
                 if verbose print("Found policy in $i iterations (|x - x'| = $distance)") end
 
-                euler_eq = euler_diff.(current_policy, z)
+                k_double_prime = current_policy[get_k.(current_policy)]
+
+                euler_eq = euler_diff.(current_policy, z, k_double_prime)
                 current_c = f.(k_space, z) .- current_policy 
 
                 euler_error = log10.(abs.(1. .- (euler_eq ./ current_c)))
