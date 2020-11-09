@@ -32,6 +32,15 @@ function value_solve(
         k, k_p, z = param
         return u_k(k, k_p, z)
     end
+
+
+    function euler_diff(k::Float64, prod::Float64)::Float64
+
+        vals = 1. .+ f_prime.(k, support_z)
+        p_z = p_cond(model.z, prod)
+
+        return inv_u_c(model.β * E(vals, p_z) * u_c(f(k, prod) - k))
+    end
     
     support_z = support(model.z)    
     k_space = Partition(collect(range(1e-5, 5, length=grid_N)))
@@ -54,19 +63,34 @@ function value_solve(
             H[:, :, h] .+= model.β * EV[:, h]
         end
 
-        next_V = reshape(maximum(H, dims=2), size(V_i))
+        values, argmax = findmax(H, dims=2)
+
+        next_V = reshape(values, size(V_i))
 
         distance = matrix_distance(V_i, next_V)
 
         if distance < tol 
             if verbose print("Found policy in $i iterations (|x - x'| = $distance)") end
-            break
+
+            current_policy = reshape(kz_grid[argmax], size(V_i))
+
+            euler_error = zeros(size(V_i))
+
+            for (h, ζ) in enumerate(support_z)
+                k_p = [tup[1] for tup in current_policy[:, h]]
+                
+                euler_eq = euler_diff.(k_p, ζ)
+                current_c = f.(k_space, ζ) .- k_p 
+
+                euler_error[:, h] =  log10.(abs.(1. .- (euler_eq ./ current_c)))
+            end
+            
+            
+            return V_i, euler_error
         end 
         
         V_i = next_V
 
     end
-
-    return V_i
     
 end

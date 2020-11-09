@@ -22,10 +22,12 @@ function policy_solve(
     end
 
     policy_k_matrix = zeros(grid_N, length(support_z))
+    EEE = zeros(grid_N, length(support_z))
     
     for (h, z) in enumerate(support_z)
 
         policy_k = ones(grid_N)
+        euler_error = ones(grid_N) * Inf
 
         for i in 1:max_iter
             current_policy = 0.5 * ones(grid_N) # fixes the k = 1, z = 1 bug
@@ -44,6 +46,12 @@ function policy_solve(
 
             if distance < tol 
                 if verbose print("Found policy in $i iterations (|x - x'| = $distance)") end
+
+                euler_eq = euler_diff.(current_policy, z)
+                current_c = f.(k_space, z) .- current_policy 
+
+                euler_error = log10.(abs.(1. .- (euler_eq ./ current_c)))
+                
                 break
             end 
 
@@ -51,9 +59,10 @@ function policy_solve(
         end
 
         policy_k_matrix[:, h] = policy_k
+        EEE[:, h] = euler_error
 
     end
 
-    return policy_k_matrix
+    return policy_k_matrix, EEE
     
 end
