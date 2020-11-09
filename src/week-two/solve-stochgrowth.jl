@@ -36,5 +36,5 @@ end
 β, α = .9, .5
 
 run_policy(
-    β, α, 0., 1., 0.7, 3; do_plot=true
+    β, α, 0., 1., 0.7, 3; do_plot=true, verbose=true
 )

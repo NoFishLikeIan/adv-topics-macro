@@ -27,12 +27,12 @@ function policy_solve(
     for i in 1:max_iter
         z = zs[i]
 
-        current_policy = ones(grid_N) .+ 1e-2 # fixes the k = 1, z = 1 bug
+        current_policy = 0.5 * ones(grid_N) # fixes the k = 1, z = 1 bug
 
         for (j, k_row) in enumerate(k_space)
             k_prime = current_policy[j]
                     
-            opt_c = find_zero(c -> euler_diff(c, k_prime, z), 0.9)
+            opt_c = find_zero(c -> euler_diff(c, k_prime, z), .01, verbose=verbose)
 
             opt_k = f(k_row, z) - opt_c 
             current_policy[j] = opt_k
