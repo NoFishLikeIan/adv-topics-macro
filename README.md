@@ -4,24 +4,25 @@ The repository for the code of the assignemnts of the course Advanced Topics in 
 
 ## Requirements
 
-Requires `Julia 1.5`. Make sure you initialize the environment based on the `Project.toml` file. In particular run, 
+Requires `Julia 1.5`. Make sure you initialize the environment based on the `Project.toml` file. 
+
+If one wishes to use the Julia repl, the `init.jl` file runs the boilerplate for you (environment and package installing). So something like,
 
 ```julia
-using Pkg
-Pkg.activate(".")
-Pkg.instantiate() # this will install the packages listed in Project.toml
+include("init.jl") # deals with startup
+include("src/$week/$my_file.jl")
 ```
 
-Then run as,
+## Assignments
 
-```julia
-include("src/week-one/vfi.jl")
-```
+The assignment of a given week can be found in the `src/` folder, for example, for week two in `src/week-two`. One can run all the code for a given assignment by simply doing,
 
-## Week one
-
-The week one files can be found under `src/week-one`. One can run all the script from week `i`, by running,
 
 ```
-julia run-$i.jl
+julia run-one.jl
+
+julia run-two.jl
 ```
+
+and so on.
+
