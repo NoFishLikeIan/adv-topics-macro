@@ -3,19 +3,6 @@ include("../markov/simulation.jl")
 
 include("../../comm_utility.jl")
 
-function matrix_distance(A, B)
-    N, M = size(A)
-
-    d = 0.
-
-    for col in 1:M
-        m = maximum(abs.(A[:, col] - B[:, col]))
-        d = m > d ? m : d
-    end
-
-    return d
-end
-
 function value_solve(
     model::StochGrowthModel; 
     max_iter=10_000, tol=1e-3, grid_N=1_000, verbose=false)

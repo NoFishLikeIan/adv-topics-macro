@@ -80,6 +80,4 @@ end
 μ, σ, ρ = 0., 1., .7
 N = 3
 
-run_solver(
-    β, α, μ, σ, ρ, N; do_plot=true, verbose=false
-)
+run_solver(β, α, μ, σ, ρ, N; do_plot=true, verbose=false)

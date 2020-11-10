@@ -15,3 +15,16 @@ function try_n(routine, n, exception; verbose=false)
 
     error("Routine failed $n times with $exception")
 end
+
+function matrix_distance(A::Array{Float64,2}, B::Array{Float64,2})::Float64
+    N, M = size(A)
+
+    d = 0.
+
+    for col in 1:M
+        m = maximum(abs.(A[:, col] - B[:, col]))
+        d = m > d ? m : d
+    end
+
+    return d
+end
