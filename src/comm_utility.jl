@@ -28,3 +28,5 @@ function matrix_distance(A::Array{Float64,2}, B::Array{Float64,2})::Float64
 
     return d
 end
+
+toupper(x, i) = x[1:i - 1] * uppercase(x[i:i]) * x[i + 1:end]
