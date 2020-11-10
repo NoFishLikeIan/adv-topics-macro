@@ -29,7 +29,7 @@ end
 """
 Discretize a Process based on equidistant points (mode = "equi") or equal probabilities (mode = "imp").
 """
-function tauchen(proc::Process, N::Int; mode="equi", m::Int=3)
+function tauchen(proc::Process, N::Int; m::Int=3)
     F = cdf(proc)
 
     ψ = m * √(var(proc))
