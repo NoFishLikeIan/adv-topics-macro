@@ -5,8 +5,10 @@ using Plots, StatsPlots
 
 plot_path = "src/week-three/solutions/plots"
 
+Grid = Union{Array{Float64,1},Array{Array{Float64,1}}}
+
 function test_diff(
-    f::Function, f_prime::Function, x_grid::Array{Float64}; 
+    f::Function, f_prime::Function, x_grid::Grid; 
     do_plot=false, filename="errors")
 
     analy_der = f_prime.(x_grid)
@@ -47,16 +49,25 @@ techniques = Dict(
     "Two sided" => constructtwosided
 )
 
-print("Testing x^2...")
+print("Testing x^2...\n")
 
 test_diff(
     x -> x^2, 
     x -> 2x, 
-    c_grid, do_plot=true, filename="squared")
+    c_grid, do_plot=false, filename="squared")
 
-print("Testing u(c)...")
+print("Testing u(c)...\n")
 
 test_diff(
     c -> -1 / c,
     c -> 1 / c^2, 
-    c_grid, do_plot=true, filename="utility")
+    c_grid, do_plot=false, filename="utility")
+
+mul_grid = collect.(Iterators.product(c_grid, c_grid))
+
+test_diff(
+    (x) -> x[1] + x[2],
+    (x) -> [1, 1], 
+    mul_grid, do_plot=false, filename="multivariate")
+
+
