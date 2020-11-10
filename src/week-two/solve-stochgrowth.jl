@@ -32,7 +32,7 @@ function run_solver(β::Float64, α::Float64, μ::Float64, σ::Float64, ρ::Floa
     u(c) = log(c)
     u_c(c) = 1 / c
 
-    grid_N = 1_000
+    grid_N = 3_000
 
     model = StochGrowthModel(
         β, α, z,
@@ -80,6 +80,4 @@ end
 μ, σ, ρ = 0., 1., .7
 N = 3
 
-run_solver(
-    β, α, μ, σ, ρ, N; do_plot=true, verbose=false
-)
+run_solver(β, α, μ, σ, ρ, N; do_plot=true, verbose=false)

@@ -39,9 +39,13 @@ end
 
 function get_closest(P::Partition, z::Real)
     
+    dist = distance(P)
+
     for (i, boundary) in enumerate(P.steps)
-        if z < boundary
+        if abs(z - boundary) < dist
             return i
         end
     end
+
+    return length(P.steps)
 end

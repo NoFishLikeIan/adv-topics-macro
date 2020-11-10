@@ -27,4 +27,3 @@ function make_z_proc(μ::Float64, σ::Float64, N::Int, ρ::Float64)::MarkovDiscr
 
     return markov
 end
-
