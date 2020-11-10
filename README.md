@@ -26,3 +26,6 @@ julia run-two.jl
 
 and so on.
 
+## LaTex submission
+
+The `.pdf` file with the LaTex submissions can be found under `src/week-$i/solutions/sol.pdf`
