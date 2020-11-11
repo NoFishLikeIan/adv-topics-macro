@@ -1,7 +1,7 @@
 include("numerical/derivatives.jl")
 include("../comm_utility.jl")
 
-using Plots, StatsPlots
+using Plots, StatsPlots, LinearAlgebra
 
 plot_path = "src/week-three/solutions/plots"
 
@@ -11,27 +11,33 @@ function test_diff(
     f::Function, f_prime::Function, x_grid::Grid; 
     do_plot=false, filename="errors")
 
+    multivariate = length(size(x_grid)) > 1
+
     analy_der = f_prime.(x_grid)
 
     errors = Dict{String,Array{Float64}}()
 
     for (name, derivative) in techniques
 
-        @time eval_deriv = derivative(f).(x_grid)
+        df = derivative(f)
 
-        error = abs.(analy_der .- eval_deriv)
+        eval_deriv = df.(x_grid)
 
-        errors[name] = error
+        error = norm.(analy_der .- eval_deriv)
+
+        errors[name] = multivariate ? sum(error, dims=2) : error
 
     end
 
     if do_plot
 
+        x = multivariate ? [el[1] for el in x_grid[:, 1]] : x_grid
+
         fn_name = toupper(filename, 1)
         plot(title="$fn_name derivative error", dpi=600)
 
-        for (name, error) in errors
-            plot!(x_grid, error, label="Error $name")
+        for (name, err_vec) in errors
+            plot!(x, err_vec, label="Error $name")
         end
 
         savefig("$plot_path/$filename.png")
@@ -42,7 +48,7 @@ function test_diff(
 
 end
 
-c_grid = collect(range(-1., 1., length=100))
+c_grid = collect(range(-2π, 2π, length=100))
 
 techniques = Dict(
     "One sided" => constructonesided,
@@ -63,11 +69,25 @@ test_diff(
     c -> 1 / c^2, 
     c_grid, do_plot=false, filename="utility")
 
+print("Testing multivariate...\n")
+
 mul_grid = collect.(Iterators.product(c_grid, c_grid))
 
-test_diff(
-    (x) -> x[1] + x[2],
-    (x) -> [1, 1], 
-    mul_grid, do_plot=false, filename="multivariate")
+function f(v::Array{Float64})::Float64
+    x, y = v
+    return sin(x^2) * cos(y)
+end
 
+function f_p(v::Array{Float64})::Array{Float64}
+    x, y = v
+    return [
+        2 * x * cos(x^2) * cos(y),
+        -1 * sin(x^2) * cos(y)
+    ]
+end
+
+error = test_diff(
+    f, 
+    f_p, 
+    mul_grid, do_plot=true, filename="multivariate")
 

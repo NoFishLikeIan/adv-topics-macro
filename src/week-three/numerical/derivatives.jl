@@ -11,7 +11,7 @@ function constructtwosided(f::Function)::Function
     function f_prime(x::Array{Float64,1})::Array{Float64,1}
         h = max(abs.(x)..., 1)
         n = length(x)
-        return  [ f(x + h * e(n, i)) - f(x - h * e(n, i)) for i in 1:n ] ./ 2h # Is this the best way?
+        return  [ f(x + h * e(i, n)) - f(x - h * e(i, n)) for i in 1:n ] ./ 2h # Is this the best way?
     end
 
     return f_prime
@@ -27,7 +27,7 @@ function constructonesided(f::Function)::Function
     function f_prime(x::Array{Float64,1})::Array{Float64,1}
         h = max(abs.(x)..., 1)
         n = length(x)
-        return  [ f(x + h * e(i, n)) - f(x) for i in 1:n ] ./ 2h # Is this the best way?
+        return  [ f(x + h * e(i, n)) - f(x) for i in 1:n ] ./ h
     end
 
     return f_prime
