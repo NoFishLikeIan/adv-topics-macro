@@ -16,6 +16,7 @@ function test_diff(
     analy_der = f_prime.(x_grid)
 
     errors = Dict{String,Array{Float64}}()
+    evals = Dict()
 
     for (name, derivative) in techniques
 
@@ -26,6 +27,7 @@ function test_diff(
         error = norm.(analy_der .- eval_deriv)
 
         errors[name] = multivariate ? sum(error, dims=2) : error
+        evals[name] = eval_deriv
 
     end
 
@@ -44,7 +46,7 @@ function test_diff(
 
     end
 
-    return errors
+    return errors, evals
 
 end
 
@@ -86,8 +88,12 @@ function f_p(v::Array{Float64})::Array{Float64}
     ]
 end
 
-error = test_diff(
+trig_error, trig_evals = test_diff(
     f, 
     f_p, 
-    mul_grid, do_plot=true, filename="multivariate")
+    mul_grid, do_plot=true, filename="trigonometric")
 
+error, evals = test_diff(
+    x -> x[1]^3 + x[2]^3, 
+    x -> [3 * x[1]^2, 3 * x[2]^2 ], 
+    mul_grid, do_plot=true, filename="multivariate")
