@@ -5,7 +5,7 @@ symbols:
    controls: [c]
    exogenous: [z]
    rewards: [u]
-   parameters: [beta, alpha, rho]
+   parameters: [beta, alpha, rho, sigma]
 
 definitions:
     y: exp(z)*k^alpha
@@ -38,14 +38,15 @@ calibration:
     # parameters
     beta : 0.99
     alpha : 0.33
-    rho : 0.8
+    rho : 0.95
+    sigma : 0.01
 
 domain:
     k: [k*0.9, k*1.1]
 
 exogenous: !VAR1
     ρ: rho
-    Σ: [[ 0.0001 ]]
+    Σ: [[ sigma^2 ]]
 
 options:
     grid: !Cartesian
