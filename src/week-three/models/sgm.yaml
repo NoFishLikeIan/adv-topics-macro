@@ -1,0 +1,52 @@
+name: Stochastic Growth Model
+
+symbols:
+   states: [k]
+   controls: [c]
+   exogenous: [z]
+   rewards: [u]
+   parameters: [beta, alpha, rho]
+
+definitions:
+    y: exp(z)*k^alpha
+
+equations:
+
+    transition:
+        - k = y(-1) - c(-1)
+
+    arbitrage:
+        - 1 - alpha*beta*(c/c(1))*k(1)^(alpha - 1)
+
+    felicity:
+        - u = log(c)
+
+# -----------------------
+calibration:
+    # exogenous state
+    z: 0
+
+    # controls
+    c: k^(alpha) - k
+
+    # states
+    k: (1/(alpha*beta))^(1/(alpha-1))
+
+    # auxiliary
+    u: log(c)
+
+    # parameters
+    beta : 0.99
+    alpha : 0.33
+    rho : 0.8
+
+domain:
+    k: [k*0.9, k*1.1]
+
+exogenous: !VAR1
+    ρ: rho
+    Σ: [[ 0.0001 ]]
+
+options:
+    grid: !Cartesian
+        n: [10]

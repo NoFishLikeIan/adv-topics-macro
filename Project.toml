@@ -1,7 +1,11 @@
 [deps]
+AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
+Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+Dolang = "e5c7262c-e9d2-5620-ad8e-1af14eb8a8e3"
+Dolo = "9d24351c-2990-5e1b-a277-04c4b809c898"
 DotEnv = "4dc1fcf4-5e3b-5448-94ab-0c38ec0385c1"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 NLsolve = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
