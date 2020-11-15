@@ -7,31 +7,45 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-model = dolo.yaml_import("src/week-three/models/sgm.yaml")
 
-def euler_equation_error(model: Model, k_space):
+def euler_equation_error(model_path: str):
 
-    calib = model.calibration
+    model = dolo.yaml_import(model_path)
+    dr = dolo.time_iteration(model, verbose = False)
 
-
-    m = calib['exogenous']
-    x = calib['controls']
-    p = calib['parameters']
-    ss = calib["states"]
+    m = model.calibration['exogenous']
+    x = model.calibration['controls']
+    p = model.calibration['parameters']
+    ss = model.calibration["states"]
     f = model.functions['arbitrage']
+
+    k_space = np.linspace(0.01, ss*10, num = 5_000)
+
+    bounds = (np.min(k_space), np.max(k_space))
+    N = len(k_space)
+
+    tab = dolo.algos.simulations.tabulate(
+        model, dr, "k",
+        bounds=bounds,
+        n_steps=N)
+
+    c = tab["c"].tolist()
 
     res = []
 
-    for k in k_space:
+    for i, k in enumerate(k_space):
         s = np.array(k).reshape(ss.shape)
-        res = f(m, s, x, m, s, x, p)
+        euler = f(m, s, x, m, s, x, p)
 
-        np.log10(np.abs(1 - res))
+        rel_error = 1 - (euler + 1) / c[i]
 
-    return res
+        eee = np.log10(np.abs(rel_error))
+        res.append(eee)
 
-k_space = np.linspace(0.01, 1, 10_000)
-res = euler_equation_error(model, k_space)
+
+    return res, k_space
+
+res, k_space = euler_equation_error(model)
 plt.plot(k_space, res)
 plt.savefig("test.png")
 
