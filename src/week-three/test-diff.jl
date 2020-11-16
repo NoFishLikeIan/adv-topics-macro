@@ -3,7 +3,7 @@ include("../comm_utility.jl")
 
 using Plots, StatsPlots, LinearAlgebra
 
-plot_path = "src/week-three/solutions/plots"
+plot_path = "src/week-three/solutions/plots/derivative"
 
 Grid = Union{Array{Float64,1},Array{Array{Float64,1}}}
 

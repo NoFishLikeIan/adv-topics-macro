@@ -4,7 +4,7 @@ include("solve-sgm/perturbation.jl")
 
 using Dolo, Distances, Distributions, Random, Plots
 
-Random.seed!(123)
+Random.seed!(11148705)
 
 model = yaml_import("src/week-three/models/sgm.yaml")
 plot_path = "src/week-three/solutions/plots"
@@ -47,7 +47,7 @@ function compare_methods(model; bounds=[0.01, 1.], n_steps=500)
     plot!(k_space, analy_eee, label="Analytical")
     plot!(k_space, quad_eee, label="Quadratic perturbation")
 
-    savefig("$plot_path/eee_comparison.png")
+    savefig("$plot_path/sgm_comp/eee_comparison.png")
 
     plot(
         title="Policy", dpi=800,
@@ -56,44 +56,29 @@ function compare_methods(model; bounds=[0.01, 1.], n_steps=500)
     plot!(k_space, analy_policy, label="Analytical")
     plot!(k_space, quad_policy, label="Quadratic perturbation")
 
-    savefig("$plot_path/policy_comparison.png")
+    savefig("$plot_path/sgm_comp/policy_comparison.png")
 
 end
 
 function perfect_foresigh_simulation(model; T=200)
-    z = construct_shock(model; T=T)
-    shocks = Dict(:z => z)
+    ts = collect(0:T)
+    shocks = Dict(:z => construct_shock(model; T=T))
 
-    sol_ref = perfect_foresight(model, shocks, T=T, complementarities=false)
-
-end
-
-if false
-
-    plot(collect(1:T), z, title="AR(1) prod. simulation", label="z")
-    savefig("$plot_path/ar1.png")
-
-    shocks = Dict(:z => z)
-
-    sol_ref = perfect_foresight(
-        model, shocks, 
-        T=T, complementarities=false)
-
-    k = sol_ref[2, :][1:end - 1]
-
-    plot(collect(0:T), k, title="Simulation", label="k(t)")
-
-    savefig("$plot_path/k.png")
-
-    x = loglin_poicy(model)
-
-    x_policy = (k -> x(c_ss, k, y_ss)[1]).(k_space)
+    sol_ref = perfect_foresight(model, shocks, T=T, complementarities=false, verbose=false)
+    k = sol_ref[2, 1:end - 1] # take the row for k excluding the last entry (undetermined)
+    z = sol_ref[1, 1:end - 1]
 
 
-    eee = analytical_eee(model)
-    plot(k_space, ((k) -> eee(k, y_ss)).(k_space))
-    savefig("eee.png")
+    plot(title="Simulation", xaxis="T")
+    plot!(ts, k, yaxis="k", label="k", color=:blue)
+    plot!(ts, NaN .* ts, label="z", color=:red, alpha=0.5) # :(
+    plot!(twinx(), ts, z, label="z", color=:red, alpha=0.5,  linewidth=2,
+    legend=false)
+
+    savefig("$plot_path/simulation/simulation.png")
+
 end
 
 
 compare_methods(model)
+perfect_foresigh_simulation(model)
