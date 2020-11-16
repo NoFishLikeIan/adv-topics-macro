@@ -57,69 +57,54 @@ techniques = Dict(
     "Two sided" => constructtwosided
 )
 
-print("Testing x^2...\n")
-
-test_diff(
-    x -> x^2, 
-    x -> 2x, 
-    c_grid, do_plot=true, filename="squared")
-
 print("Testing u(c)...\n")
 
-test_diff(
-    c -> -1 / c,
-    c -> 1 / c^2, 
+u(c) = - 1 / c
+u_p(c) = 1 / c^2
+
+test_diff(u, u_p,
     c_grid, do_plot=true, filename="utility")
 
-print("Testing multivariate...\n")
+print("Testing production...\n")
 
-mul_grid = collect.(Iterators.product(c_grid, c_grid))
+const µ = 0.05 
+const σ = 0.6
+const λ = 0.25
+const ρ = 0.2
 
-function f(v::Array{Float64})::Float64
-    x, y = v
-    return sin(x^2) * cos(y)
+G(K, N, H) = μ * N^σ + (1 - μ) * (λ * K^ρ + (1 - λ) * H^ρ)^(σ / ρ)
+
+F(K::Float64, N::Float64, H::Float64) = G(K, N, H)^(1 / σ)
+function F(v::Array{Float64})
+    K, N, H = v
+    return F(K, N, H)
 end
 
-function f_p(v::Array{Float64})::Array{Float64}
-    x, y = v
-    return [
-        2 * x * cos(x^2) * cos(y),
-        -1 * sin(x^2) * sin(y)
+"""
+The analytical derivative of the production function
+"""
+function F_p(K::Float64, N::Float64, H::Float64) 
+    
+    outer = (1 / σ) * G(K, N, H)^((1 - σ) / σ)
+    outer_kh = (σ * (1 - μ) / ρ) * (λ * K^ρ + (1 - λ) * H^ρ)^(-1 + σ / ρ)
+
+    return outer * [
+        outer_kh * λ * ρ * K^(ρ - 1),
+        σ * μ * N^(σ - 1),
+        outer_kh * (1 - λ) * H^(ρ - 1)
     ]
-end
-
-test_diff(
-    f, 
-    f_p, 
-    mul_grid, do_plot=true, filename="trigonometric")
-
-test_diff(
-    x -> x[1]^3 + x[2]^3, 
-    x -> [3 * x[1]^2, 3 * x[2]^2 ], 
-    mul_grid, do_plot=true, filename="multivariate")
-
-
-if false
-
-    function f(v::Array{Float64})::Array{Float64}
-        x, y, z = v 
-
-        return sin(x^2) * exp(-y) * z
-    end
-
-    function f_p(v::Array{Float64})::Array{Float64}
-        x, y, z = v
-
-        return [
-            2 * x * cos(x^2) * exp(-y) * z,
-            - f(v),
-            sin(x^2) * exp(-y)
-        ]
-    end
-
-    test_diff(
-        f, f_p, 
-        collect.(Iterators.product(c_grid, c_grid, c_grid)), do_plot=true, filename="trivariate"
-    )
 
 end
+
+
+function F_p(v::Array{Float64})
+    K, N, H = v
+    return F_p(K, N, H)
+end
+
+
+grid = range(0.01, .99, length=10)
+mul_grid = collect.(Iterators.product(grid, grid, grid)) 
+
+errors, evals = test_diff(F, F_p,
+    mul_grid, do_plot=false, filename="production")
