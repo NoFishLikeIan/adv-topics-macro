@@ -62,14 +62,14 @@ print("Testing x^2...\n")
 test_diff(
     x -> x^2, 
     x -> 2x, 
-    c_grid, do_plot=false, filename="squared")
+    c_grid, do_plot=true, filename="squared")
 
 print("Testing u(c)...\n")
 
 test_diff(
     c -> -1 / c,
     c -> 1 / c^2, 
-    c_grid, do_plot=false, filename="utility")
+    c_grid, do_plot=true, filename="utility")
 
 print("Testing multivariate...\n")
 
@@ -84,16 +84,42 @@ function f_p(v::Array{Float64})::Array{Float64}
     x, y = v
     return [
         2 * x * cos(x^2) * cos(y),
-        -1 * sin(x^2) * cos(y)
+        -1 * sin(x^2) * sin(y)
     ]
 end
 
-trig_error, trig_evals = test_diff(
+test_diff(
     f, 
     f_p, 
     mul_grid, do_plot=true, filename="trigonometric")
 
-error, evals = test_diff(
+test_diff(
     x -> x[1]^3 + x[2]^3, 
     x -> [3 * x[1]^2, 3 * x[2]^2 ], 
     mul_grid, do_plot=true, filename="multivariate")
+
+
+if false
+
+    function f(v::Array{Float64})::Array{Float64}
+        x, y, z = v 
+
+        return sin(x^2) * exp(-y) * z
+    end
+
+    function f_p(v::Array{Float64})::Array{Float64}
+        x, y, z = v
+
+        return [
+            2 * x * cos(x^2) * exp(-y) * z,
+            - f(v),
+            sin(x^2) * exp(-y)
+        ]
+    end
+
+    test_diff(
+        f, f_p, 
+        collect.(Iterators.product(c_grid, c_grid, c_grid)), do_plot=true, filename="trivariate"
+    )
+
+end
