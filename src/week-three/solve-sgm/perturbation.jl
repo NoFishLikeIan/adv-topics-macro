@@ -26,6 +26,6 @@ function pert_eee(model; n_steps=1_000, bounds=[.01, 1.])
 
     end
 
-    return eee, k_space
+    return eee, tab
 
 end
