@@ -1,6 +1,7 @@
 include("solve-sgm/analytical.jl")
 include("solve-sgm/log.jl")
 include("solve-sgm/perturbation.jl")
+include("solve-sgm/eee.jl")
 
 using Dolo, Distances, Distributions, Random, Plots
 
@@ -41,12 +42,8 @@ function compare_methods(model; bounds=[0.01, 0.7], n_steps=500)
     analy_policy = analytical_policy(model)[1].(k_space, y_ss)
     analy_eee = analytical_eee(model).(k_space, y_ss)
 
-    #  c_imp_pol = implicit_policy(model)[1].(k_space, y_ss) 
-    #  c_imp_eee = implicit_eee(model).(k_space, y_ss)
-#  
-    #  log_pol = loglin_poicy(model)[1].(k_space, y_ss)
-    #  log_eee = loglin_eee(model).(k_space, y_ss)
-
+    c_imp_pol, k_imp_pol = implicit_policy(model)
+    c_imp_eee = eee(c_imp_pol, k_imp_pol, model).(k_space, y_ss)
 
     plot(
         title="Euler equation errors", dpi=800,
@@ -56,7 +53,6 @@ function compare_methods(model; bounds=[0.01, 0.7], n_steps=500)
     plot!(k_space, analy_eee, label="Analytical")
     plot!(k_space, quad_eee, label="Quadratic perturbation")
     # plot!(k_space, c_imp_eee, label="Implicit function theorem")
-    # plot!(k_space, log_eee, label="Log-linearization")
 
 
     savefig("$plot_path/sgm_comp/eee_comparison.png")
@@ -68,7 +64,6 @@ function compare_methods(model; bounds=[0.01, 0.7], n_steps=500)
     plot!(k_space, analy_policy, label="Analytical")
     plot!(k_space, quad_policy, label="Quadratic perturbation")
     # plot!(k_space, c_imp_pol, label="Implicit function theorem")
-    # plot!(k_space, log_pol, label="Log-linearization")
 
     savefig("$plot_path/sgm_comp/policy_comparison.png")
 

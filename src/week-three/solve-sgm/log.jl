@@ -54,34 +54,3 @@ function implicit_policy(model)
 
     return c_policy, k_policy
 end
-
-function loglin_eee(model)
-
-    parameters = model.calibration.flat
-
-    α, β = parameters[:alpha], parameters[:beta]
-    ρ, σ = parameters[:rho], parameters[:sigma]
-
-
-    c_p, k_p = loglin_poicy(model)
-
-
-    f(k, y) = β * (α * y * k_p(k, y)^(α - 1) ) / c_p(k_p(k, y), y)
-
-    return (k, y) -> log10(abs(1 - f(k, y)))
-end
-
-function implicit_eee(model)
-
-    parameters = model.calibration.flat
-
-    α, β = parameters[:alpha], parameters[:beta]
-    ρ, σ = parameters[:rho], parameters[:sigma]
-
-
-    c_p, k_p = implicit_policy(model)
-
-    f(k, y) = β * (α * y * k_p(k, y)^(α - 1) ) / c_p(k_p(k, y), y)
-
-    return (k, y) -> log10(abs(1 - f(k, y)))
-end
