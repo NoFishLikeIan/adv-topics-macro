@@ -50,7 +50,7 @@ function test_diff(
 
 end
 
-c_grid = collect(range(-2π, 2π, length=100))
+c_grid = collect(range(0, 2, length=100))
 
 techniques = Dict(
     "One sided" => constructonesided,
