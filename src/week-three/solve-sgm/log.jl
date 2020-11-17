@@ -1,4 +1,4 @@
-function loglin_poicy(model)
+function loglin_policy(model)
 
     parameters = model.calibration.flat
 

@@ -1,13 +1,13 @@
 include("solve-sgm/analytical.jl")
-include("solve-sgm/log.jl")
 include("solve-sgm/perturbation.jl")
+include("solve-sgm/log.jl")
+
 include("solve-sgm/eee.jl")
+include("solve-sgm/simulation.jl")
 
 using Dolo, Distances, Distributions, Random, Plots
 
 Random.seed!(11148705)
-
-# TODO: Euler equation should not depend on model but only on policy
 
 model = yaml_import("src/week-three/models/sgm.yaml")
 plot_path = "src/week-three/solutions/plots"
@@ -48,37 +48,51 @@ function compare_methods(model; bounds=[0.01, 0.7], n_steps=500)
     plot(title="Euler equation errors", dpi=800, xaxis="k", yaxis="EEE(k)")
 
     plot!(k_space, analy_eee, label="Analytical")
-    plot!(k_space, quad_eee, label="Quadratic perturbation")
-    plot!(k_space, c_imp_eee, label="Implicit function theorem")
+    plot!(k_space, quad_eee, label="Quad. pert.")
+    plot!(k_space, c_imp_eee, label="Imp. Fn. Th.")
 
 
     savefig("$plot_path/sgm_comp/eee_comparison.png")
 
     plot(title="Policy", dpi=800, xaxis="k", yaxis="c(k)")
     plot!(k_space, analy_policy, label="Analytical")
-    plot!(k_space, quad_policy, label="Quadratic perturbation")
-    plot!(k_space, c_imp_pol.(k_space, y_ss), label="Implicit function theorem")
+    plot!(k_space, quad_policy, label="Quad. pert.")
+    plot!(k_space, c_imp_pol.(k_space, y_ss), label="Imp. Fn. Th.")
 
     savefig("$plot_path/sgm_comp/policy_comparison.png")
 
 end
 
 function perfect_foresight_simulation(model; T=200)
-    ts = collect(0:T)
+    ts = collect(1:T)
     shocks = Dict(:z => construct_shock(model; T=T))
 
+    # Dolo.jl simulations
     sol_ref = perfect_foresight(model, shocks, T=T, complementarities=false, verbose=false)
-    k = sol_ref[2, 1:end - 1] # take the row for k excluding the last entry (undetermined)
-    z = sol_ref[1, 1:end - 1]
+    z = sol_ref[1, 1:end - 1] # take the row for k excluding the last entry (undetermined)
+    k = sol_ref[2, 1:end - 1]
+    c = sol_ref[3, 1:end - 1]
 
+    k1 = k[1]
+
+    # Analytical simulation
+    c_p_analytical, k_p_analytical = analytical_policy(model)
+    tab_analytical = simulate_shock(c_p_analytical, k_p_analytical, k1, z)
+    k_analytical = tab_analytical[:, 2]
+
+    # Implicit policy simulation
+    c_p_imp, k_p_imp = loglin_policy(model)
+    tab_imp = simulate_shock(c_p_imp, k_p_imp, k1, z)
+    k_imp = tab_imp[:, 2]
 
     plot(title="Simulation", xaxis="T", dpi=800)
-    plot!(ts, k, yaxis="k", label="k", color=:blue)
-    plot!(ts, NaN .* ts, label="z", color=:green, alpha=0.5) # :(
+    plot!(ts, k[2:end], yaxis="k", label="Quad. pert.", color=:blue, linewidth=1)
+    plot!(ts, k_analytical[2:end], label="Analytical", color=:red, linewidth=1)
 
+
+    plot!(ts, NaN .* ts, label="z", color=:black, alpha=0.5) # :(
     plt = twinx()
-    plot!(plt, ts, z, label="z", color=:green, alpha=0.5,  linewidth=2,
-        legend=false)
+    plot!(plt, ts, z[2:end], label="z", color=:black, alpha=0.5, legend=false)
 
     savefig("$plot_path/simulation/simulation.png")
 
