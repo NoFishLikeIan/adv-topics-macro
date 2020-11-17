@@ -41,15 +41,27 @@ function implicit_policy(model)
 
     y_ss, k_ss, c_ss = analytical_ss(model)
 
-    akss = α * k_ss^(α - 1)
+    """
+    System:
+    xy + (ρ - 1)*z - c_ss = 0
+    z + w - k_ss^α = 0
+    x + y - α * k_ss^(α - 1) = 0
+    (y - 1) * x * k_ss^(α - 1) - y^(α - 2)*(α - 1)*c_ss = 0
+    """
+    function f!(F, x)
+        x, y, z, w = x
+        F[1] = x * y + (ρ - 1) * z - c_ss
+        F[2] = z + w - k_ss^α
+        F[3] = x + y - α * k_ss^(α - 1)
+        F[4] = (y - 1) * x * k_ss^(α - 1) - y^(α - 2) * (α - 1) * c_ss
+    end
 
-    k_k = 0.5 * (√(4 * c_ss - akss^2) + akss)
-    k_y = k_ss^(α) 
+    init_x = [0.5, 0.5, 0.5, 0.5]
+    res = mcpsolve(f!, [0., 0., 0., 0.], [Inf, Inf, Inf, Inf], init_x)
+    c_k, k_k, c_y, k_y = res.zero
 
-    c_k = 0.5 * (√((k_ss * akss^2 - 4 * c_ss * k_ss^2) / k_ss^2) - akss)
-    
-    c_policy(k, _) = c_ss + c_k * (k - k_ss) / k_ss
-    k_policy(k, y) = k_ss + k_k * (k - k_ss) / k_ss + k_y * (y - y_ss) / y_ss
+    c_policy(k, y) = max(c_ss + c_k * (k - k_ss) / k_ss + c_y * (y - y_ss) / y_ss, 0.01)
+    k_policy(k, y) = max(k_ss + k_k * (k - k_ss) / k_ss + k_y * (y - y_ss) / y_ss, 0.01) # Avoid negative values for k too far from k_ss
 
 
     return c_policy, k_policy

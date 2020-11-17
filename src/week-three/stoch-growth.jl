@@ -45,31 +45,25 @@ function compare_methods(model; bounds=[0.01, 0.7], n_steps=500)
     c_imp_pol, k_imp_pol = implicit_policy(model)
     c_imp_eee = eee(c_imp_pol, k_imp_pol, model).(k_space, y_ss)
 
-    plot(
-        title="Euler equation errors", dpi=800,
-        xaxis="k", yaxis="EEE(k)"
-    )
+    plot(title="Euler equation errors", dpi=800, xaxis="k", yaxis="EEE(k)")
 
     plot!(k_space, analy_eee, label="Analytical")
     plot!(k_space, quad_eee, label="Quadratic perturbation")
-    # plot!(k_space, c_imp_eee, label="Implicit function theorem")
+    plot!(k_space, c_imp_eee, label="Implicit function theorem")
 
 
     savefig("$plot_path/sgm_comp/eee_comparison.png")
 
-    plot(
-        title="Policy", dpi=800,
-        xaxis="k", yaxis="c(k)"
-    )
+    plot(title="Policy", dpi=800, xaxis="k", yaxis="c(k)")
     plot!(k_space, analy_policy, label="Analytical")
     plot!(k_space, quad_policy, label="Quadratic perturbation")
-    # plot!(k_space, c_imp_pol, label="Implicit function theorem")
+    plot!(k_space, c_imp_pol.(k_space, y_ss), label="Implicit function theorem")
 
     savefig("$plot_path/sgm_comp/policy_comparison.png")
 
 end
 
-function perfect_foresigh_simulation(model; T=200)
+function perfect_foresight_simulation(model; T=200)
     ts = collect(0:T)
     shocks = Dict(:z => construct_shock(model; T=T))
 
@@ -92,4 +86,4 @@ end
 
 
 compare_methods(model)
-perfect_foresigh_simulation(model)
+perfect_foresight_simulation(model)
