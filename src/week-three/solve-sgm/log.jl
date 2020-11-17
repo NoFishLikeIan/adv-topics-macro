@@ -1,3 +1,5 @@
+using NLsolve
+
 function loglin_policy(model)
 
     parameters = model.calibration.flat
