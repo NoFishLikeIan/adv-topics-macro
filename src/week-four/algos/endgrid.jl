@@ -27,6 +27,7 @@ function endgrid(
     function policy(a::Float64, y::Float64)::Float64
         max(intp(a, y), a_)
     end
+    policy(v::Array{Float64}) = policy(v...)
     
     return policy, a_p
 end 
@@ -71,7 +72,7 @@ function computeQ(a′::Function, a_grid::Array{Float64}, ai::Aiyagari)
 
     Q_a = zeros((N, N, T))
     
-    Q_aprime = (v -> a′(v...)).(double_grid)
+    Q_aprime = a′.(double_grid)
 
     Q_a = a_todensity(Q_a, Q_aprime, a_grid)
 
