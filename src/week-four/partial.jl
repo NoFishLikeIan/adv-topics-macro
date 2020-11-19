@@ -3,6 +3,8 @@ include("algos/endgrid.jl")
 
 include("../week-two/markov/discretization/tauchen.jl")
 
+using Plots
+
 r = .04
 w = 1.
 
@@ -11,5 +13,8 @@ model = Aiyagari(
     0, 0.95, 0.33, 0.1, 2 # Model parameters a, β, α, δ, σ_u
 )
 
-a′, a_grid = endgrid(model, r, w; n_steps=10)
-# Q_a = computeQ_a(a′, grid)
+a′, a_grid = endgrid(model, r, w; n_steps=150, upperbound=50)
+Φ = distribution_eigenvector(a′, a_grid, model)
+
+heatmap(Φ')
+savefig("test.png")
