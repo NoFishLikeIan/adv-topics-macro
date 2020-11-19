@@ -11,7 +11,6 @@ struct Aiyagari
     α::Float64
     δ::Float64
     σ_u::Float64
-
     
     # Inner constructor for the Markov discretization of an AR(1)
     function Aiyagari(ρ::Float64, σ_inn::Float64, N::Int, params...)
@@ -29,11 +28,12 @@ end
 """
 Returns utility and first derivative based on Aiyagari parameters
 """
-function make_u(ai::Aiyagari)::Tuple{Function,Function}
+function make_u(ai::Aiyagari)::Tuple{Function,Function,Function}
     esp = 1 - ai.σ_u
 
     u(c::Float64)::Float64 = (c^esp - 1) / esp
-    u_c(c::Float64)::Float64 = c^(-ai.σ_u)
+    u′(c::Float64)::Float64 = c^(-ai.σ_u)
+    invu′(x::Float64)::Float64 = x^(-1 / ai.σ_u)
 
-    return u, u_c
+    return u, u′, invu′
 end
