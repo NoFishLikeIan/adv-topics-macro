@@ -8,7 +8,7 @@ include("../../comm_utility.jl")
 function value_solve(
     model::Aiyagari, r::Float64, w::Float64; 
     upperbound=2.,
-    max_iter=10_000, tol=1e-3, grid_N=1_000, verbose=true)
+    max_iter=10_000, tol=1e-3, grid_N=1_000, verbose=false)
 
     @unpack β, y, a_ = model
 
@@ -35,7 +35,7 @@ function value_solve(
 
     for i in 1:max_iter
 
-        if verbose print("Iteration $i / $max_iter \r") end
+        verbose && print("Iteration $i / $max_iter \r")
 
         EV = V_i * Γ'
 
@@ -51,7 +51,7 @@ function value_solve(
 
 
         if distance < tol 
-            if verbose print("Found policy in $i iterations (|x - x'| = $distance)") end
+            verbose && print("Found policy in $i iterations (|x - x'| = $distance)\n")
 
             current_policy = reshape(ay_grid[argmax], size(V_i))
 
