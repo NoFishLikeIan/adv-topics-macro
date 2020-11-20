@@ -1,7 +1,7 @@
 include("stochgrowth.jl")
 include("../markov/simulation.jl")
 
-include("../../comm_utility.jl")
+include("../../commons/matrix.jl")
 
 function value_solve(
     model::StochGrowthModel; 

@@ -2,7 +2,7 @@ using Printf
 
 using Interpolations, Parameters
 
-include("../../comm_utility.jl")
+include("../../commons/matrix.jl")
 
 
 function value_solve(

@@ -4,7 +4,7 @@ include("markov/discretization/tauchen.jl")
 include("markov/discretization/rouwenhorst.jl")
 include("markov/simulation.jl")
 include("markov/markov-types.jl")
-include("../comm_utility.jl")
+include("../commons/routine.jl")
 
 plot_path = "src/week-two/solutions/plots/"
 MoM_attempts = 3

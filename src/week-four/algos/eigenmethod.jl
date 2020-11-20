@@ -82,11 +82,9 @@ function distribution_eigenvector(
     Q, dims = computeQ(a′, a_grid, model)
 
     verbose && print("Finding stationary distribution...\n")
-    x = [1; (I - Q[2:end,2:end]) \ Vector(Q[2:end,1])]
     
-
     Φ_bar = gth ? QuantEcon.gth_solve(collect(Q)) : eigenstationary(Q)
 
-    return reshape(Φ_bar, dims)
+    return reshape(sparse(Φ_bar), dims)
 
 end

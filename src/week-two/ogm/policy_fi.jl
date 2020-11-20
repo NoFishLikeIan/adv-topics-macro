@@ -1,8 +1,6 @@
 include("stochgrowth.jl")
 include("../markov/simulation.jl")
 
-include("../../comm_utility.jl")
-
 function policy_solve(
     model::StochGrowthModel; 
     max_iter=10_000, tol=1e-3, grid_N=1_000, verbose=false)
