@@ -457,3 +457,4 @@ dmypy.json
 cython_debug/
 
 **/cached
+.env
