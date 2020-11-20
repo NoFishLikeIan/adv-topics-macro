@@ -1,6 +1,6 @@
-using Parameters
+using Printf
 
-using Interpolations
+using Interpolations, Parameters
 
 include("../../comm_utility.jl")
 
@@ -8,7 +8,7 @@ include("../../comm_utility.jl")
 function value_solve(
     model::Aiyagari, r::Float64, w::Float64; 
     upperbound=2.,
-    max_iter=10_000, tol=1e-3, grid_N=1_000, verbose=false)
+    max_iter=10_000, tol=1e-3, n_steps=1_000, verbose=false)
 
     @unpack β, y, a_ = model
 
@@ -51,7 +51,7 @@ function value_solve(
 
 
         if distance < tol 
-            verbose && print("Found policy in $i iterations (|x - x'| = $distance)\n")
+            verbose && print("Found policy in $i iterations (|x - x'| = $(@sprintf("%.4f", distance))\n")
 
             current_policy = reshape(ay_grid[argmax], size(V_i))
 
