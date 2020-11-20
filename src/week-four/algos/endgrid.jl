@@ -5,7 +5,7 @@ Compute a policy using the endogenous grid method
 """
 function endgrid(
     ai::Aiyagari, r::Float64, w::Float64;
-    n_steps=1_000, upperbound=10.)
+    n_steps=1_000, upperbound=10., verbose=false)
 
     u, u′, inv_u′ = make_u(ai)
     @unpack β, a_, y = ai 
