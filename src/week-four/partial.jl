@@ -11,16 +11,6 @@ include("../week-two/markov/discretization/tauchen.jl")
 
 using Plots
 
-
-# Environment variables
-const scriptpath = rsplit(tst, "/", limit=2)[1]
-const plot = false
-
-const verbose = get!(ENV, "VERBOSE", "false") == "true"
-const cache = get!(ENV, "CACHE", "false") == "true"
-const plotpath = joinpath(scriptpath, "solutions/plots/")
-const cachepath = joinpath(scriptpath, "cached")
-
 function solvepartial(
     model::Aiyagari, r::Float64, w::Float64;
     grid_N=1_000, gth=true, verbose=false, cache=false, end_grid=true)
@@ -34,15 +24,16 @@ function solvepartial(
 end
 
 
-model = Aiyagari(
-    0.9, 0.1, markov_N, # AR process parameters ρ, σ, N
+# Run only if directly called, not included
+if abspath(PROGRAM_FILE) == @__FILE__
+
+    model = Aiyagari(
+    0.9, 0.1, 7, # AR process parameters ρ, σ, N
     0, 0.95, 0.33, 0.1, 2 # Model parameters a, β, α, δ, σ_u
-)
+    )
 
-Φ, a′, a_grid = solvepartial(model, 0.05, 1.)
+    Φ, a′, a_grid = solvepartial(model, 0.05, 1.)
 
-
-if plot
     plot(
         a_grid,
         (a -> a′(a, 0.)).(a_grid),

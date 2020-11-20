@@ -13,7 +13,7 @@ function Base.getindex(e::e{T}, i) where T
     @boundscheck @assert i <= e.n
     ifelse(i == e.i, one(T), zero(T))
 end
-Base.size(e::e{T}) = (e.n,)
+Base.size(e::e) = (e.n,)
 
 function matrix_distance(A::Array{Float64,2}, B::Array{Float64,2})::Float64
     N, M = size(A)
