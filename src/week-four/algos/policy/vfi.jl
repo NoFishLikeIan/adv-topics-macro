@@ -2,7 +2,7 @@ using Printf
 
 using Interpolations, Parameters
 
-include("../../commons/matrix.jl")
+include("../../../commons/matrix.jl")
 
 
 function value_solve(
@@ -20,11 +20,11 @@ function value_solve(
     binding_u = (v) -> u(R * v[1] + w * v[3] - v[2])
 
     support_y = support(model.y)    
-    a_space = Partition(collect(range(1e-5, upperbound, length=grid_N)))
+    a_space = Partition(collect(range(1e-5, upperbound, length=n_steps)))
 
     ay_grid = collect(Iterators.product(a_space, a_space, support_y))
 
-    V_i = ones(grid_N, length(support_y))
+    V_i = ones(n_steps, length(support_y))
     
     get_a = (a::Real) -> get_closest(a_space, a)
     
