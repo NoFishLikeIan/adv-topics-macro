@@ -10,6 +10,7 @@ function endgrid(
     u, u′, inv_u′ = make_u(ai)
     @unpack β, a_, y = ai 
     ys = y.S
+    ϕ = y.transformation
     Γ = y.P
 
     R = 1 + r
@@ -18,10 +19,12 @@ function endgrid(
 
     a_pp = ones((n_steps, length(ys)))
 
-    next_mu = @. u′(R * a_p + w * ys' - a_pp)
+    # TODO: Here it needs to iterate
+
+    next_mu = @. u′(R * a_p + w * ϕ(ys)' - a_pp)
     rhs = β * R * next_mu * Γ'
-    a = @. (inv_u′(rhs) - w * ys' + a_p) / R
-        
+    a = @. (inv_u′(rhs) - w * ϕ(ys)' + a_p) / R
+            
     intp = LinearInterpolation((a_p, ys,), a, extrapolation_bc=(Linear(), Linear()))
 
     function policy(a::Float64, y::Float64)::Float64

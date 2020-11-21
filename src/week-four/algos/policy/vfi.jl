@@ -10,14 +10,18 @@ function value_solve(
     upperbound=2.,
     max_iter=10_000, tol=1e-3, n_steps=1_000, verbose=false)
 
-    @unpack β, y, a_ = model
+    @unpack β, y, a_, y = model
 
-    Γ = model.y.P
+    ϕ = y.transformation
+    Γ = y.P
     R = 1 + r
 
     u, u′, invu′ = make_u(model)
 
-    binding_u = (v) -> u(R * v[1] + w * v[3] - v[2])
+    function binding_u(v)
+        a, a_p, y = v
+        return u(R * a + w * ϕ(y) - a_p)
+    end
 
     support_y = support(model.y)    
     a_space = Partition(collect(range(1e-5, upperbound, length=n_steps)))
@@ -43,17 +47,17 @@ function value_solve(
             H[:, :, h] = utility[:, :, h] .+ β * EV[:, h]
         end
 
-        values, argmax = findmax(H, dims=2)
+        values, argmx = findmax(H, dims=2)
 
         next_V = reshape(values, size(V_i))
 
-        distance = matrix_distance(V_i, next_V)
+        distance_error = matrix_distance(V_i, next_V)
 
 
-        if distance < tol 
-            verbose && print("Found policy in $i iterations (|x - x'| = $(@sprintf("%.4f", distance))\n")
+        if distance_error < tol 
+            verbose && print("Found policy in $i iterations (|x - x'| = $(@sprintf("%.4f", distance_error))\n")
 
-            current_policy = reshape(ay_grid[argmax], size(V_i))
+            current_policy = reshape(ay_grid[argmx], size(V_i))
 
             ϕ = (v -> v[2]).(current_policy)
 

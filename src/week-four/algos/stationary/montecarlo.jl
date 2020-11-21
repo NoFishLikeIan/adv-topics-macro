@@ -1,5 +1,6 @@
 
 using Distributions, KernelDensity
+using Logging
 
 function moments(a::Vector{Float64})
     return [mean(a), var(a), skewness(a), kurtosis(a)]
@@ -40,8 +41,10 @@ function distribution_mc(
 
     end
 
+    @warn "Algorithm did non converge with tol=$tol in $max_iter iterations"
 
-    throw(ConvergenceException(max_iter))
+    return a_next
+    
 
 end
 
