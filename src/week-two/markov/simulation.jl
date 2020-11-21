@@ -49,21 +49,22 @@ function make_inv_F(pseudoF::Matrix{Float64})
 end
 
 function discrete_sim(markov::MarkovDiscrete; 
-    T::Int=2000,
-    drop::Int=500)
+    T::Int=2000, drop::Int=500, y0::Float64=nothing)
 
     if drop > T error("Variables to drop ($drop) > total ($total)") end
+
+    getindexS = currygetindex(markov.S)
 
     inverse_F = make_inv_F(pseudoF(markov.P))
 
     evolution_jdx = zeros(Int, T)
-    evolution_jdx[1] = rand(1:length(markov.S))
+    evolution_jdx[1] = isnothing(y0) ? rand(1:length(markov.S)) : get_closest(markov.S, y0)
 
     for (t, u) in enumerate(rand(Uniform(), T - 1))
         evolution_jdx[t + 1] = inverse_F(u, evolution_jdx[t])
     end
 
-    sim = currygetindex(markov.S).(evolution_jdx[drop:end])
+    sim = getindexS.(evolution_jdx[drop:end])
     
     return markov.transformation.(sim)
 end

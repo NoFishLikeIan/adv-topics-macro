@@ -1,8 +1,7 @@
-using Distributions
+using Distributions, Parameters
 
 include("../week-two/markov/simulation.jl")
 include("../week-two/markov/process.jl")
-
 
 struct Aiyagari 
     y::MarkovDiscrete
@@ -37,3 +36,14 @@ function make_u(ai::Aiyagari)::Tuple{Function,Function,Function}
 
     return u, u′, invu′
 end
+
+function make_F(ai::Aiyagari)
+    @unpack α, δ = ai
+    F(k) = k^α
+    F_k(k) = α * k^(α - 1)
+    F_l(k) = (1 - α) * k^α
+
+    invF_k(x) = (x / α)^(1 / (α - 1))
+
+    return F, F_k, F_l, invF_k
+end 
