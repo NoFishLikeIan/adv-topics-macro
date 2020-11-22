@@ -1,7 +1,7 @@
 include("aiyagari.jl")
 
-include("algos/policy/endgrid.jl")
-include("algos/policy/vfi.jl")
+include("algos/policy/solve.jl")
+include("algos/policy/pfi.jl")
 
 include("algos/stationary/eigenmethod.jl")
 include("algos/stationary/montecarlo.jl")
@@ -17,9 +17,7 @@ function solvepartial(
     mc=true, grid_N=1_000, end_grid=false,
     verbose=false, cache=false)
 
-    policy_method = end_grid ? endgrid : value_solve
-
-    a′, a_grid = policy_method(model, r, w; n_steps=grid_N, upperbound=10., verbose=verbose)
+    a′, a_grid = policysolve(model, r, w; n_steps=grid_N, upperbound=10., verbose=verbose)
 
     if mc
         λ = distribution_mc(a′, a_grid, model; 
@@ -46,7 +44,7 @@ if plot_dens
     )
     
     λ, a′, a_grid = solvepartial(
-        model, .05, 1., grid_N=400,
+        model, .05, 1., grid_N=50;
         verbose=true, mc=false, end_grid=true)
 
     plot(title="Policy", xaxis="a")
@@ -63,7 +61,7 @@ if plot_dens
     savefig("src/week-four/solutions/plots/policy.png")
 
 
-    plot(a_grid, λ, title="Stable distribution", xaxis="a", color=:red)
+    # plot(a_grid, λ, title="Stable distribution", xaxis="a", color=:red)
 
-    savefig("src/week-four/solutions/plots/stat_dist.png")
+    # savefig("src/week-four/solutions/plots/stat_dist.png")
 end
