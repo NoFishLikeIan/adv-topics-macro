@@ -1,22 +1,7 @@
 using Interpolations, NLsolve
+using Printf
+
 using Logging
-
-function fromMtoFn(
-    x::Vector{Float64}, y::Vector{Float64}, m::Matrix{Float64})
-
-
-    intp = LinearInterpolation((x, y,), m, extrapolation_bc=(Linear(), Linear()))
-
-    function fn(x::Float64, y::Float64) intp(x, y) end
-
-    function fn(v::Vector{Float64}) return fn(v...) end
-
-    return fn
-end
-
-function cartesian(x::Vector{Real}, y::Vector{Real})
-    return collect.(Iterators.product(x, y))
-end
 
 function iterate_pfi(
     as::Vector{Float64}, ai::Aiyagari, R::Float64, w::Float64;

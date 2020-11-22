@@ -2,9 +2,12 @@ include("aiyagari.jl")
 
 include("algos/policy/solve.jl")
 include("algos/policy/pfi.jl")
+include("algos/policy/endgrid.jl")
 
 include("algos/stationary/eigenmethod.jl")
 include("algos/stationary/montecarlo.jl")
+
+include("../commons/matrix.jl")
 
 include("../week-two/markov/discretization/tauchen.jl")
 
@@ -44,7 +47,7 @@ if plot_dens
     )
     
     λ, a′, a_grid = solvepartial(
-        model, .05, 1., grid_N=50;
+        model, .05, 1., grid_N=500;
         verbose=true, mc=false, end_grid=true)
 
     plot(title="Policy", xaxis="a")
