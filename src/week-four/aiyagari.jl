@@ -17,7 +17,7 @@ struct Aiyagari
         ar = Process(Normal(0, σ_y), ρ, Normal(0, σ_inn))
 
         P, S = tauchen(ar, N)
-        y = MarkovDiscrete(P, S, y -> exp(y))
+        y = MarkovDiscrete(P, S, z -> exp(z))
 
         return new(y, params...)
     end

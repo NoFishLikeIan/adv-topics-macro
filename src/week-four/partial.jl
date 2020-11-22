@@ -20,11 +20,14 @@ function solvepartial(
     mc=true, grid_N=1_000, end_grid=false,
     verbose=false, cache=false)
 
-    a′, a_grid = policysolve(model, r, w; n_steps=grid_N, upperbound=10., verbose=verbose)
+    a′, a_grid = policysolve(model, r, w; n_steps=grid_N, upperbound=10., verbose=verbose, max_iter=2)
+ 
 
     if mc
-        λ = distribution_mc(a′, a_grid, model; 
+        kde = distribution_mc(a′, a_grid, model; 
             verbose=verbose, inits=10_000, tol=1e-1, max_iter=5000)
+
+        λ(x) = pdf(kde, x)
 
     else 
 
@@ -48,7 +51,7 @@ if plot_dens
     
     λ, a′, a_grid = solvepartial(
         model, .05, 1., grid_N=500;
-        verbose=true, mc=false, end_grid=true)
+        verbose=true, mc=true, end_grid=true)
 
     plot(title="Policy", xaxis="a")
 
@@ -64,7 +67,7 @@ if plot_dens
     savefig("src/week-four/solutions/plots/policy.png")
 
 
-    # plot(a_grid, λ, title="Stable distribution", xaxis="a", color=:red)
+    plot(a_grid, λ, title="Stable distribution", xaxis="a", color=:red)
 
-    # savefig("src/week-four/solutions/plots/stat_dist.png")
+    savefig("src/week-four/solutions/plots/stat_dist.png")
 end

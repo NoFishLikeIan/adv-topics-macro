@@ -1,5 +1,15 @@
 using Parameters
 
+function fromVtoFn(x::Vector{Float64}, f::Vector{Float64})
+
+    intp = LinearInterpolation((x,), f, extrapolation_bc=(Linear(),))
+
+    function fn(x::Float64) intp(x) end
+
+    return fn
+    
+end
+
 function fromMtoFn(
     x::Vector{Float64}, y::Vector{Float64}, m::Matrix{Float64})
 

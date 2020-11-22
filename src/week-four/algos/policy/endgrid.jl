@@ -8,7 +8,7 @@ Compute a policy using the endogenous grid method
 """
 function endgrid(
     as::Vector{Float64}, ai::Aiyagari, R::Float64, w::Float64;
-    n_steps=1_000, upperbound=100., verbose=false, tol=1e-3, max_iter=1_000)
+    n_steps=1_000, verbose=false, tol=1e-3, max_iter=1_000)
 
     u, ∂u∂c, inv_∂u∂c = make_u(ai)
     @unpack β, a_, y = ai
@@ -46,34 +46,31 @@ function endgrid(
         return a
     end    
 
-    a_dprime = 0.5 * ones(N, T)
+    a_dprime = repeat(ap_grid, 1, T)
 
     for iter in 1:max_iter
 
         a′′ = construct_policy(a_dprime)
 
-        function a(a′, y)
-            ⅁ = Γ[get_row(support_y, y), :] 
+        function a(a′::Float64, y::Float64)
             u_values = @. ∂u∂c(R * a′ + w * ϕ(ys) - a′′(a′, ϕ(ys)))
-            rhs = β * R * ⅁' * u_values
+
+            rhs = β * R *  Γ[get_closest(support_y, y), :]' * u_values
             return (inv_∂u∂c(rhs) - w * ϕ(y) + a′) / R
         end
 
-        function a(a′::Matrix{Float64}, y::Vector{Float64})
-            next_a = similar(a′)
-            for j in 1:length(y)
-                col_a = a′[:, j]
-                next_a[:, j] = a.(col_a, y[j])
-            end
-            return next_a
-        end
+        next_adp = zeros(size(a_dprime))
 
-        function a(v::Vector{Float64}) a(v...) end
-        
-        a_gridded = a.(domain)
-        replace!(a_gridded, NaN => 0.)
-        
-        next_adp = max.(a_gridded, a_)
+        for j in 1:T
+            
+            reverted_a = a.(ap_grid, ys[j])
+            i = sortperm(reverted_a)
+
+            a_pp_intp = fromVtoFn(reverted_a[i], ap_grid[i])
+
+            next_adp[:, j] = max.(a_pp_intp.(ap_grid), a_)
+
+        end
 
         err_distance = matrix_distance(a_dprime, next_adp)
 

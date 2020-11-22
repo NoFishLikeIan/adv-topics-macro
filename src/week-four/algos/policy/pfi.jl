@@ -44,7 +44,7 @@ function iterate_pfi(
         return a_n
     end
 
-    a_prime = 0.5 * ones(N, T)
+    a_prime = repeat(a_grid, 1, T)
 
     function factory_euler(a::Float64, y::Float64, a′′::Function)
         function euler(a_p::Float64)
