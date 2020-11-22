@@ -34,8 +34,10 @@ function solvepartial(
         stable_Q = distribution_eigenvector(a′, a_grid, model, verbose=verbose, gth=true)
     
         center_y = get_row(model.y.S, 0.0)
-        λ = collect(stable_Q[:, center_y])
-        λ = λ ./ sum(λ)
+        cent_dist = collect(stable_Q[:, center_y])
+        cent_dist = cent_dist ./ sum(cent_dist)
+
+        λ = LinearInterpolation(a_grid, cent_dist, extrapolation_bc=Line())
 
     end
 
@@ -44,14 +46,18 @@ function solvepartial(
 end
 
 if plot_dens
+
+    r = .9
+    w = 1.
+    
     model = Aiyagari(
         0.9, 0.1, 7, # AR process parameters ρ, σ, N
         0, 0.95, 0.33, 0.1, 2 # Model parameters a, β, α, δ, σ_u
     )
     
     λ, a′, a_grid = solvepartial(
-        model, .05, 1., grid_N=100;
-        verbose=true, mc=true, end_grid=true)
+        model, r, w, grid_N=100;
+        verbose=true, mc=false, end_grid=true)
 
     plot(title="Policy", xaxis="a")
 
@@ -64,10 +70,10 @@ if plot_dens
         )
     end
 
-    savefig("src/week-four/solutions/plots/policy.png")
+    savefig("src/week-four/solutions/plots/policy_$(Int(r * 100)).png")
 
 
     plot(a_grid, λ, title="Stable distribution", xaxis="a", color=:red)
 
-    savefig("src/week-four/solutions/plots/stat_dist.png")
+    savefig("src/week-four/solutions/plots/stat_dist_$(Int(r * 100)).png")
 end

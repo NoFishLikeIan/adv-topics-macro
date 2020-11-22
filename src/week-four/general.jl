@@ -7,7 +7,7 @@ using Roots
 
 
 function solve_general(
-    model::Aiyagari; verbose=false, grid_N=1_000)
+    model::Aiyagari; verbose=false, grid_N=1_000, mc=true)
     @unpack δ, β, a_ = model
 
     bounds = [-δ, -1 + 1 / β]
@@ -18,8 +18,11 @@ function solve_general(
     w = (r) -> F_l(K(r))
 
     function A(r::Float64)
-        Φ, a′, a_grid = solvepartial(model, r, w(r), verbose=verbose, grid_N=grid_N)
-        return quadgk(a -> a * pdf(Φ, a), model.a_, Inf)[1]
+        Φ, a′, a_grid = solvepartial(model, r, w(r), verbose=verbose, grid_N=grid_N, mc=mc)
+
+        λ(x) = mc ? pdf(Φ, x) : Φ(x)
+
+        return quadgk(a -> a * λ(a), model.a_, a_grid[end])[1]
     end
 
     clearprices(r) = A(r) - K(r)
@@ -35,5 +38,5 @@ model = Aiyagari(
     0, 0.95, 0.33, 0.1, 2 # Model parameters a, β, α, δ, σ_u
 )
 
-r = solve_general(model, verbose=true, grid_N=500)
+r = solve_general(model, verbose=true, grid_N=100, mc=false)
 
