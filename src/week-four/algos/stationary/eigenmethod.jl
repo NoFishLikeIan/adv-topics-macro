@@ -51,7 +51,7 @@ function computeQ(a′::Function, a_grid::Array{Float64}, ai::Aiyagari)
     double_grid = collect.(Iterators.product(a_grid, ys))
     N, T = size(double_grid)
     
-    Q_aprime = a′.(double_grid)
+    Q_aprime = (v -> a′(v...)).(double_grid)
 
     Q_a = reshape(a_todensity(Q_aprime, a_grid), (N, N, T))
 

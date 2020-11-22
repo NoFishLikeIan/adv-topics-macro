@@ -18,14 +18,14 @@ using Plots
 function solvepartial(
     model::Aiyagari, r::Float64, w::Float64;
     mc=true, grid_N=1_000, end_grid=false,
-    verbose=false, cache=false)
+    verbose=false, cache=false, kwargs...)
 
-    a′, a_grid = policysolve(model, r, w; n_steps=grid_N, upperbound=10., verbose=verbose, max_iter=2)
+    a′, a_grid = policysolve(model, r, w; n_steps=grid_N, upperbound=10., verbose=verbose, kwargs...)
  
 
     if mc
         kde = distribution_mc(a′, a_grid, model; 
-            verbose=verbose, inits=10_000, tol=1e-1, max_iter=5000)
+            verbose=verbose, inits=10_000, kwargs...)
 
         λ(x) = pdf(kde, x)
 
@@ -50,7 +50,7 @@ if plot_dens
     )
     
     λ, a′, a_grid = solvepartial(
-        model, .05, 1., grid_N=500;
+        model, .05, 1., grid_N=100;
         verbose=true, mc=true, end_grid=true)
 
     plot(title="Policy", xaxis="a")

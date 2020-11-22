@@ -4,88 +4,71 @@ using Printf
 using Logging
 
 """
+Computes the discrete expectation
+"""
+function E(vals::Array{Float64}, density::Array{Float64})::Float64
+    return sum(vals .* density)
+end
+
+"""
 Compute a policy using the endogenous grid method
 """
 function endgrid(
-    as::Vector{Float64}, ai::Aiyagari, R::Float64, w::Float64;
+    a_grid::Vector{Float64}, ai::Aiyagari, R::Float64, w::Float64;
     n_steps=1_000, verbose=false, tol=1e-3, max_iter=1_000)
 
-    u, ∂u∂c, inv_∂u∂c = make_u(ai)
+    u, u′, inv_u′ = make_u(ai)
     @unpack β, a_, y = ai
 
-    support_y = y.S
-    ys = collect(support_y)
-    ϕ = y.transformation
     Γ = y.P
-
-    N, T = length(as), length(ys)
-
-    ap_grid = copy(as)
-    domain = cartesian(as, ys)
-
-    function construct_policy(a_matrix::Matrix{Float64})
-
-        function a(a′::Float64, y::Float64) 
-            return fromMtoFn(as, ys, a_matrix)(a′, y)
-        end
+    support_y = y.S
+    cond_dens(x) = Γ[get_closest(support_y, x), :]
     
-        function a(v::Vector{Float64})
-            return a(v...)
-        end
+    ys = collect(support_y)
+    shocks = y.transformation.(ys)
     
-        function a(a′::Matrix{Float64}, y::Vector{Float64})
-            next_a = similar(a′)
-            for j in 1:length(y)
-                col_a = a′[:, j]
-                next_a[:, j] = a.(col_a, y[j])
-            end
-    
-            return next_a
-        end
-    
-        return a
-    end    
+    T, N = length(ys), length(a_grid)
 
-    a_dprime = repeat(ap_grid, 1, T)
+    policy = (a, y) -> a + y
+    
+    as_origin = zeros(N, T)
+    prev_policy = zeros(N, T)
 
     for iter in 1:max_iter
 
-        a′′ = construct_policy(a_dprime)
+        for (i, j) in Iterators.product(1:N, 1:T)
 
-        function a(a′::Float64, y::Float64)
-            u_values = @. ∂u∂c(R * a′ + w * ϕ(ys) - a′′(a′, ϕ(ys)))
+            a_p = a_grid[i]
 
-            rhs = β * R *  Γ[get_closest(support_y, y), :]' * u_values
-            return (inv_∂u∂c(rhs) - w * ϕ(y) + a′) / R
+            vals = @. u′(R * a_p + w * shocks - policy(a_p, ys))
+
+            c = β * R * E(vals, cond_dens(ys[j]))
+
+            as_origin[i, j] = (inv_u′(c) - w * ys[j] + a_p) / R
+
         end
 
-        next_adp = zeros(size(a_dprime))
+        eval_policy = zeros(N, T)
 
         for j in 1:T
-            
-            reverted_a = a.(ap_grid, ys[j])
-            i = sortperm(reverted_a)
-
-            a_pp_intp = fromVtoFn(reverted_a[i], ap_grid[i])
-
-            next_adp[:, j] = max.(a_pp_intp.(ap_grid), a_)
-
+            itps = LinearInterpolation(as_origin[:, j], a_grid, extrapolation_bc=Line())
+            eval_policy[:, j] = @. max(itps(a_grid), a_)
         end
 
-        err_distance = matrix_distance(a_dprime, next_adp)
-
-        verbose && print("Iteration $iter / $max_iter -> $err_distance\r")
+        err_distance = matrix_distance(eval_policy, prev_policy)
 
         if err_distance < tol 
             verbose && print("Found policy in $iter iterations (|x - x'| = $(@sprintf("%.4f", err_distance))\n")
-            return a′′
-        end 
+            return (a, y) -> max(policy(a, y), a_)
+        end
 
-        a_dprime = next_adp
+        policy = LinearInterpolation((a_grid, support_y,), eval_policy, extrapolation_bc=(Line(), Line()))
+
+        prev_policy = eval_policy
+
     end
 
     @warn "Could not find policy in $max_iter iterations with tolerance $tol"
 
-    return a′′
-
+    return policy
 end 

@@ -3,7 +3,7 @@ using Distributions, KernelDensity
 using Logging
 
 function moments(a::Vector{Float64})
-    return [mean(a), var(a), skewness(a), kurtosis(a)]
+    return [mean(a), var(a)]
 end
 
 function distribution_mc(
@@ -19,12 +19,13 @@ function distribution_mc(
     min_err = Inf
 
     for i in 1:max_iter
-
-        
+ 
         y_next = sim.(y0s)
         a_next = a′.(a0s, y0s)
         
         err = norm(moments(a_next) - moments(a0s))
+
+        if isnan(err) print(moments(a_next), "\n\n")  end
         
         if verbose
             min_err = min(err, min_err)
