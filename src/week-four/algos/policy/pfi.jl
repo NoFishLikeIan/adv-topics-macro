@@ -1,19 +1,20 @@
-using Interpolations, NLsolve
-using Printf
+using Interpolations, Roots
+using Base.Threads
 
-using Logging
+using Logging, Printf
 
 function iterate_pfi(
     as::Vector{Float64}, ai::Aiyagari, R::Float64, w::Float64;
     max_iter=1_000, tol=1e-3, verbose=false
 )
 
-    u, ∂u∂c, inv_∂u∂c = make_u(ai)
+    u, u′, inv_u′ = make_u(ai)
     @unpack β, a_, y = ai
 
     support_y = y.S
     ys = collect(support_y)
-    ϕ = y.transformation
+    shocks = y.transformation.(ys)
+    cond_dens(x) = Γ[get_closest(support_y, x), :]
     Γ = y.P
 
     N, T = length(as), length(ys)
@@ -21,66 +22,46 @@ function iterate_pfi(
     a_grid = copy(as)
     domain = cartesian(a_grid, ys)
 
-    function construct_ap(a_prime::Matrix{Float64})
+    a_prime = ones(N, T)
 
-        function a_n(a::Float64, y::Float64) 
-            return fromMtoFn(as, ys, a_prime)(a, y)
-        end
-
-        function a_n(v::Vector{Float64})
-            return a_n(v...)
-        end
-
-        function a_n(a::Matrix{Float64}, y::Vector{Float64})
-            next_a = similar(a)
-            for j in 1:length(y)
-                col_a = a[:, j]
-                next_a[:, j] = a_n.(col_a, y[j])
-            end
-
-            return next_a
-        end
-
-        return a_n
-    end
-
-    a_prime = repeat(a_grid, 1, T)
-
-    function factory_euler(a::Float64, y::Float64, a′′::Function)
-        function euler(a_p::Float64)
-            rhs = β * R * (Γ[get_row(support_y, y), :]' * (@. ∂u∂c(R * a_p + w * ϕ(ys) - a′′(a_p, ϕ(ys)))))
-            lhs =  ∂u∂c(R * a + w * ϕ(y) - a_p)
-            return rhs - lhs
-        end
-    end
-
+    a′ = fromMtoFn(a_grid, ys, a_prime)
+    
     for iter in 1:max_iter
-        a′′ = construct_ap(a_prime)
-        next_ap = copy(a_prime)
+
+        next_a_prime = copy(a_prime)
+
+        @threads for i in 1:N
+            t_a = a_grid[i]
+            for j in 1:T
+                t_y = ys[j]
+
+                vals(a_p) = @. u′(R * a_p + w * shocks - a′(a_p, shocks))
+                rhs(a_p) = β * R * E(vals(a_p), cond_dens(t_y))
+                lhs(a_p) = u′(R * t_a + w * t_y - a_p)
+
+                a0 = a′(t_a, t_y)
+                try
+                    solution = find_zero(z -> rhs(z) - lhs(z), a0)
+                    next_a_prime[i, j] = max(solution, a_)
+                catch e end
         
-        for (i, j) in Iterators.product(1:N, 1:T)
-            a, y = domain[i, j]
-
-            function tosolve!(F, x) F[1] = factory_euler(a, y, a′′)(x[1]) end
-            root = mcpsolve(tosolve!, [a_], [Inf], [a_prime[i, j]]) 
-
-            next_ap[i, j] = max(root.zero[1], a_)
+            end
         end
+        
+        err_distance = matrix_distance(a_prime, next_a_prime)
 
-        err_distance = matrix_distance(a_prime, next_ap)
-
-        verbose && print("Iteration $iter / $max_iter -> $err_distance\r")
+        verbose && print("Iteration $iter / $max_iter: $(@sprintf("%.4f", err_distance)) \r")
 
         if err_distance < tol 
             verbose && print("Found policy in $iter iterations (|x - x'| = $(@sprintf("%.4f", err_distance))\n")
-            return a′′
-        end 
+            return a′
+        end
 
-        a_prime = next_ap
+        a_prime = next_a_prime
+        a′ = fromMtoFn(a_grid, ys, a_prime)
     end
 
     @warn "Could not find policy in $max_iter iterations with tolerance $tol"
 
-    return a′′
-
-end    
+    return policy
+end
