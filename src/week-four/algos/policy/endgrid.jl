@@ -1,15 +1,8 @@
 using Parameters, Interpolations
-using Printf
+using Base.Threads
 
-using Logging
 
-"""
-Computes the discrete expectation
-"""
-function E(vals::Array{Float64}, density::Array{Float64})::Float64
-    return sum(vals .* density)
-end
-
+using Logging, Printf
 """
 Compute a policy using the endogenous grid method
 """
@@ -36,16 +29,16 @@ function endgrid(
 
     for iter in 1:max_iter
 
-        for (i, j) in Iterators.product(1:N, 1:T)
+        @threads for i in 1:N
+            for j in 1:T
+                a_p = a_grid[i]
 
-            a_p = a_grid[i]
+                vals = @. u′(R * a_p + w * shocks - policy(a_p, ys))
 
-            vals = @. u′(R * a_p + w * shocks - policy(a_p, ys))
+                c = β * R * E(vals, cond_dens(ys[j]))
 
-            c = β * R * E(vals, cond_dens(ys[j]))
-
-            as_origin[i, j] = (inv_u′(c) - w * ys[j] + a_p) / R
-
+                as_origin[i, j] = (inv_u′(c) - w * ys[j] + a_p) / R
+            end
         end
 
         eval_policy = zeros(N, T)
@@ -62,8 +55,7 @@ function endgrid(
             return (a, y) -> max(policy(a, y), a_)
         end
 
-        policy = LinearInterpolation((a_grid, support_y,), eval_policy, extrapolation_bc=(Line(), Line()))
-
+        policy = fromMtoFn(a_grid, ys, eval_policy)
         prev_policy = eval_policy
 
     end

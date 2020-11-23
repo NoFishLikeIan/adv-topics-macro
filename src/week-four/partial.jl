@@ -43,10 +43,9 @@ end
 
 function solvepartial(
     model::Aiyagari, r::Float64, w::Float64;
-    mc=true, n_steps=1_000, end_grid=false,
-    verbose=false, cache=false, kwargs...)
+    mc=true, verbose=false, kwargs...)
 
-    a′, a_grid = policysolve(model, r, w; n_steps=n_steps, upperbound=10., verbose=verbose, kwargs...)
+    a′, a_grid = policysolve(model, r, w; verbose=verbose, kwargs...)
 
     λ = distribution_pdf(a′, a_grid, model; mc=mc, verbose=verbose, kwargs...)
 

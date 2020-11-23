@@ -1,5 +1,13 @@
 using Parameters
 
+"""
+Computes the discrete expectation
+"""
+function E(vals::Array{Float64}, density::Array{Float64})::Float64
+    return sum(vals .* density)
+end
+
+
 function fromVtoFn(x::Vector{Float64}, f::Vector{Float64})
 
     intp = LinearInterpolation((x,), f, extrapolation_bc=(Linear(),))
@@ -30,13 +38,15 @@ end
 
 function policysolve(
     ai::Aiyagari, r::Float64, w::Float64;
-    n_steps=1_000, upperbound=10., kwargs...)
+    n_steps=100, upperbound=10., end_grid=false, kwargs...)
 
     R = 1 + r
 
     as = collect(range(ai.a_, upperbound, length=n_steps))
 
-    a′ = endgrid(as, ai, R, w; kwargs...)
+    solver = end_grid ? endgrid : iterate_pfi
+
+    a′ = solver(as, ai, R, w; kwargs...)
 
     return a′, as
 end
