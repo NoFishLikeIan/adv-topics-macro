@@ -26,6 +26,8 @@ model = Aiyagari(
 
 append_filename = r != .05 ? "_$(Int(r * 100))" : ""
 
+a_grids = []
+policies = []
 
 for end_grid in [false, true]
 
@@ -52,7 +54,13 @@ for end_grid in [false, true]
 
     savefig("src/week-four/solutions/plots/partial/policy$(end_grid ? "_end" : "_pfi")$append_filename.png")
 
+
+    push!(policies, a′)
+    push!(a_grids, a_grid)
 end
+
+a′ = policies[2]
+a_grid = a_grids[2]
 
 verbose && print("Finding steady state distribution...\n")
 

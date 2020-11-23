@@ -37,5 +37,5 @@ model = Aiyagari(
     0, 0.95, 0.33, 0.1, 2 # Model parameters a, β, α, δ, σ_u
 )
 
-r = solve_general(model, verbose=true, n_steps=100, mc=false)
+# r = solve_general(model, verbose=true, n_steps=100, mc=false)
 

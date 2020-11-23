@@ -7,7 +7,7 @@ function moments(a::Vector{Float64})
 end
 
 function distribution_mc(
-    a′::Function, a_grid::Vector{Float64}, model::Aiyagari;
+    a′, a_grid::Vector{Float64}, model::Aiyagari;
     inits=1_000, verbose=false, max_iter=500, tol=1e-2)
 
     markov = model.y    

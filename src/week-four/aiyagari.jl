@@ -2,6 +2,7 @@ using Distributions, Parameters
 
 include("../week-two/markov/simulation.jl")
 include("../week-two/markov/process.jl")
+include("../week-two/markov/discretization/rouwenhorst.JL")
 
 struct Aiyagari 
     y::MarkovDiscrete
@@ -16,7 +17,7 @@ struct Aiyagari
         σ_y = σ_inn / √(1 - ρ^2)
         ar = Process(Normal(0, σ_y), ρ, Normal(0, σ_inn))
 
-        P, S = tauchen(ar, N)
+        P, S = rouwenhorst_analy(ar, N)
         y = MarkovDiscrete(P, S, z -> exp(z))
 
         return new(y, params...)
