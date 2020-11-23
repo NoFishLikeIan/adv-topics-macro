@@ -2,15 +2,16 @@ include("partial.jl")
 include("aiyagari.jl")
 
 using Parameters
-using QuadGK, KernelDensity
-using Roots
+using QuadGK, Roots
 
+ϵ = 1e-4
 
 function solve_general(
-    model::Aiyagari; verbose=false, grid_N=1_000, mc=true)
+    model::Aiyagari; verbose=false, n_steps=200, mc=true)
+
     @unpack δ, β, a_ = model
 
-    bounds = [-δ, -1 + 1 / β]
+    bounds = [ϵ - δ, 1 / β - (1 + ϵ)]
 
     F, F_k, F_l, invF_k = make_F(model)
 
@@ -18,9 +19,7 @@ function solve_general(
     w = (r) -> F_l(K(r))
 
     function A(r::Float64)
-        Φ, a′, a_grid = solvepartial(model, r, w(r), verbose=verbose, grid_N=grid_N, mc=mc)
-
-        λ(x) = mc ? pdf(Φ, x) : Φ(x)
+        λ, a′, a_grid = solvepartial(model, r, w(r), verbose=true, n_steps=n_steps, mc=mc)
 
         return quadgk(a -> a * λ(a), model.a_, a_grid[end])[1]
     end
@@ -38,5 +37,5 @@ model = Aiyagari(
     0, 0.95, 0.33, 0.1, 2 # Model parameters a, β, α, δ, σ_u
 )
 
-r = solve_general(model, verbose=true, grid_N=100, mc=false)
+r = solve_general(model, verbose=true, n_steps=100, mc=false)
 
