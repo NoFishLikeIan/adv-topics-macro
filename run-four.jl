@@ -15,6 +15,7 @@ r = .05
 w = 1.
 
 n_steps = 500
+
 upperbound = 8.
 
 model = Aiyagari(
@@ -23,29 +24,35 @@ model = Aiyagari(
     )
     
 
-verbose && print("Finding policy function...\n")
-a′, a_grid = policysolve(
-    model, r, w; 
-    n_steps=n_steps, upperbound=upperbound, 
-    verbose=verbose
-)
-
-# Plot the policy function
-plot(title="Policy", xaxis="a")
-
-for y in model.y.transformation.(model.y.S)
-    plot!(
-            a_grid,
-            (a -> a′(a, y)).(a_grid),
-            label="a′(a | y = $(@sprintf("%.2f", y)))",
-            xaxis="a"
-        )
-end
-
 append_filename = r != .05 ? "_$(Int(r * 100))" : ""
 
-savefig("src/week-four/solutions/plots/partial/policy$append_filename.png")
 
+for end_grid in [false, true]
+
+    verbose && print("Finding policy function with $(end_grid ? "endogenous grid method" : "policy function iteration")...\n")
+
+    a′, a_grid = policysolve(
+        model, r, w; 
+        n_steps=n_steps, upperbound=upperbound, 
+        verbose=verbose, end_grid=end_grid
+    )
+
+
+    # Plot the policy function
+    plot(title="Policy", xaxis="a")
+
+    for y in model.y.transformation.(model.y.S)
+        plot!(
+                a_grid,
+                (a -> a′(a, y)).(a_grid),
+                label="a′(a | y = $(@sprintf("%.2f", y)))",
+                xaxis="a"
+            )
+    end
+
+    savefig("src/week-four/solutions/plots/partial/policy$(end_grid ? "_end" : "_pfi")$append_filename.png")
+
+end
 
 verbose && print("Finding steady state distribution...\n")
 
