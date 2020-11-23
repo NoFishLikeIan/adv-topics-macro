@@ -8,7 +8,7 @@ end
 
 function distribution_mc(
     a′::Function, a_grid::Vector{Float64}, model::Aiyagari;
-    inits=1_000, verbose=false, max_iter=1_000, tol=1e-2)
+    inits=1_000, verbose=false, max_iter=500, tol=1e-2)
 
     markov = model.y    
     sim = (y0) -> discrete_sim(markov, T=2, drop=1, y0=y0)[2]
@@ -44,7 +44,7 @@ function distribution_mc(
 
     @warn "Algorithm did non converge with tol=$tol in $max_iter iterations"
 
-    return a_next
+    return kde(a0s)
     
 
 end
