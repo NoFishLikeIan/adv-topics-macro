@@ -7,7 +7,7 @@ using QuadGK, Roots
 ϵ = 1e-4
 
 function solve_general(
-    model::Aiyagari; verbose=false, n_steps=200, mc=true)
+    model::Aiyagari; verbose=false, n_steps=200)
 
     @unpack δ, β, a_ = model
 
@@ -19,14 +19,16 @@ function solve_general(
     w = (r) -> F_l(K(r))
 
     function A(r::Float64)
-        λ, a′, a_grid = solvepartial(model, r, w(r), verbose=true, n_steps=n_steps, mc=mc)
+        λ, a′, a_grid = solvepartial(
+            model, r, w(r),
+            verbose=verbose, n_steps=n_steps, mc=false, end_grid=true)
 
         return quadgk(a -> a * λ(a), model.a_, a_grid[end])[1]
     end
 
     clearprices(r) = A(r) - K(r)
 
-    @time interest = find_zero(clearprices, bounds, verbose=verbose)
+    @time interest = find_zero(clearprices, mean(bounds), verbose=verbose)
 
     return interest
 end

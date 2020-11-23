@@ -14,9 +14,9 @@ include("src/week-four/partial.jl")
 r = .05
 w = 1.
 
-n_steps = 500
+n_steps = 100
 
-upperbound = 8.
+upperbound = 50.
 
 model = Aiyagari(
         0.9, 0.1, 7, # AR process parameters ρ, σ, N
@@ -41,7 +41,7 @@ for end_grid in [false, true]
 
 
     # Plot the policy function
-    plot(title="Policy", xaxis="a")
+    plot(title="Policy", xaxis="a", legend=:left)
 
     for y in model.y.transformation.(model.y.S)
         plot!(

@@ -48,12 +48,16 @@ function computeQ(a′::Function, a_grid::Array{Float64}, ai::Aiyagari)
     ys = ai.y.S
     Γ = ai.y.P
 
-    double_grid = collect.(Iterators.product(a_grid, ys))
+    finer_grid = collect(
+        range(a_grid[1], a_grid[end], length=length(a_grid) * 3)
+    )
+
+    double_grid = collect.(Iterators.product(finer_grid, ys))
     N, T = size(double_grid)
     
     Q_aprime = (v -> a′(v...)).(double_grid)
 
-    Q_a = reshape(a_todensity(Q_aprime, a_grid), (N, N, T))
+    Q_a = reshape(a_todensity(Q_aprime, finer_grid), (N, N, T))
 
     Q = spzeros(N * T, N * T)
 
@@ -66,7 +70,7 @@ function computeQ(a′::Function, a_grid::Array{Float64}, ai::Aiyagari)
 
     droptol!(Q, 1e-10)
 
-    return Q, (N, T)
+    return Q, (N, T), finer_grid
 end 
 
 
@@ -79,12 +83,12 @@ function distribution_eigenvector(
     gth=false, verbose=false)
 
     verbose && print("Computing Q matrix...\n")
-    Q, dims = computeQ(a′, a_grid, model)
+    Q, dims, finer_grid = computeQ(a′, a_grid, model)
 
     verbose && print("Finding stationary distribution...\n")
     
     Φ_bar = gth ? QuantEcon.gth_solve(collect(Q)) : eigenstationary(Q)
 
-    return reshape(sparse(Φ_bar), dims)
+    return reshape(sparse(Φ_bar), dims), finer_grid
 
 end

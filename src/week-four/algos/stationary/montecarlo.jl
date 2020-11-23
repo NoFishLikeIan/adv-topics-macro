@@ -25,20 +25,18 @@ function distribution_mc(
         
         err = norm(moments(a_next) - moments(a0s))
 
-        if isnan(err) print(moments(a_next), "\n\n")  end
-        
+        if isnan(err)
+            print(a_next, " - ", a0s, " - ", y0s, "\n\n")
+        end
         if verbose
             min_err = min(err, min_err)
-            print("$i / $max_iter : $min_err \r")
+            print("$i / $max_iter : $err - $min_err \r")
         end
 
         if err < tol 
             print("Found stationary!\n\n")
             return kde(a_next)
         end
-
-        a0s = a_next
-        y0s = y_next
 
     end
 

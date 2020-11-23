@@ -21,19 +21,19 @@ function distribution_pdf(a′, a_grid, model; mc=false, kwargs...)
 
     if mc
         kde = distribution_mc(a′, a_grid, model; 
-            verbose=verbose, inits=10_000, kwargs...)
+            verbose=verbose, inits=10_000)
 
         λ(x) = pdf(kde, x)
 
     else 
 
-        stable_Q = distribution_eigenvector(a′, a_grid, model, verbose=verbose, gth=true)
+        stable_Q, finer_grid = distribution_eigenvector(a′, a_grid, model, verbose=verbose, gth=true)
     
         center_y = get_row(model.y.S, 0.0)
         cent_dist = collect(stable_Q[:, center_y])
         cent_dist = cent_dist ./ sum(cent_dist)
 
-        λ = LinearInterpolation(a_grid, cent_dist, extrapolation_bc=Line())
+        λ = LinearInterpolation(finer_grid, cent_dist, extrapolation_bc=Line())
 
     end
 
