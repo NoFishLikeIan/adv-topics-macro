@@ -56,9 +56,10 @@ verbose && print("Finding steady state distribution...\n")
 
 λ_eig =  distribution_pdf(a′, a_grid, model; mc=false, verbose=verbose)
 
-eig_ys = λ_eig.(a_grid)
+xs = range(model.a_, 10., length=100)
+eig_ys = λ_eig.(xs)
 
-plot(a_grid, eig_ys, color=:black, label="Eig", alpha=0.5)
+plot(xs, eig_ys, color=:black, label="Eig", alpha=0.5)
 
 
 savefig("src/week-four/solutions/plots/partial/stat_dist$append_filename.png")
