@@ -84,5 +84,5 @@ as = A.(xs)
 ks = K.(xs)
 
 plot(xs, as, label="A(r)", title="Capital market", xaxis="r")
-plot(xs, ks, label="K(r)")
+plot!(xs, ks, label="K(r)")
 savefig("src/week-four/solutions/plots/partial/k_market.png")
