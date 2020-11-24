@@ -4,10 +4,10 @@ include("aiyagari.jl")
 using Parameters
 using QuadGK, Roots
 
-ϵ = 1e-4
+ϵ = 1e-3
 
-function solve_general(
-    model::Aiyagari; verbose=false, n_steps=200)
+function solvegeneral(
+    model::Aiyagari; verbose=false, n_steps=75)
 
     @unpack δ, β, a_ = model
 
@@ -19,25 +19,16 @@ function solve_general(
     w = (r) -> F_l(K(r))
 
     function A(r::Float64)
+        
         λ, a′, a_grid = solvepartial(
-            model, r, w(r),
-            verbose=verbose, n_steps=n_steps, mc=false, end_grid=true)
-
+                model, r, w(r),
+                verbose=false, 
+                n_steps=n_steps, upperbound=50.,
+                mc=false, end_grid=true)
+                
         return quadgk(a -> a * λ(a), model.a_, a_grid[end])[1]
+
     end
 
-    clearprices(r) = A(r) - K(r)
-
-    @time interest = find_zero(clearprices, mean(bounds), verbose=verbose)
-
-    return interest
+    return A, K, w
 end
-
-
-model = Aiyagari(
-    0.9, 0.1, 7, # AR process parameters ρ, σ, N
-    0, 0.95, 0.33, 0.1, 2 # Model parameters a, β, α, δ, σ_u
-)
-
-# r = solve_general(model, verbose=true, n_steps=100, mc=false)
-

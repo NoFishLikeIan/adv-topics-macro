@@ -1,4 +1,4 @@
-using Plots
+using Plots, Roots
 
 # Environment variables
 const scriptpath = rsplit(@__FILE__, "/", limit=2)[1]
@@ -7,12 +7,13 @@ verbose = get!(ENV, "VERBOSE", "false") == "true"
 plotpath = joinpath(scriptpath, "src/week-four/solutions/plots/")
 
 include("src/week-four/partial.jl")
+include("src/week-four/general.jl")
 
 # --- Running partial equilibrium
 
-
 r = .05
 w = 1.
+print("--> Solving partial equilibrium (r = $r, w = $w)\n")
 
 n_steps = 25
 
@@ -63,3 +64,25 @@ plot(xs, eig_ys, color=:black, label="Eig", alpha=0.5)
 
 
 savefig("src/week-four/solutions/plots/partial/stat_dist$append_filename.png")
+
+
+# General equilibrium
+
+print("--> Solving general equilibrium\n")
+
+A, K, w = solvegeneral(model, verbose=verbose, n_steps=75)
+
+@time r = find_zero(
+    x -> A(x) - K(x),
+    (1 / model.β - 1  - model.δ) / 2 
+)
+
+print("Equilibrium interest rate, $r, and wage, $(w(r))\n\n")
+
+xs = collect(range(-0.06, 0.05, length=50))
+as = A.(xs)
+ks = K.(xs)
+
+plot(xs, as, label="A(r)", title="Capital market", xaxis="r")
+plot(xs, ks, label="K(r)")
+savefig("src/week-four/solutions/plots/partial/k_market.png")

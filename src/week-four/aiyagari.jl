@@ -44,7 +44,7 @@ function make_F(ai::Aiyagari)
     F_k(k) = α * k^(α - 1)
     F_l(k) = (1 - α) * k^α
 
-    invF_k(x) = (x / α)^(1 / (α - 1))
+    invF_k(x) = (x / α)^(1 / (α - 1)) - 2.
 
     return F, F_k, F_l, invF_k
 end 
