@@ -38,7 +38,7 @@ end
 
 function policysolve(
     ai::Aiyagari, r::Float64, w::Float64;
-    n_steps=100, upperbound=10., end_grid=false, kwargs...)
+    n_steps=100, upperbound=10., end_grid=true, kwargs...)
 
     R = 1 + r
 

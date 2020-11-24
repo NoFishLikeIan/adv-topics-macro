@@ -29,11 +29,11 @@ function distribution_pdf(a′, a_grid, model; mc=false, kwargs...)
 
         stable_Q, finer_grid = distribution_eigenvector(a′, a_grid, model, verbose=verbose, gth=true)
     
-        center_y = get_row(model.y.S, 0.0)
-        cent_dist = collect(stable_Q[:, center_y])
-        cent_dist = cent_dist ./ sum(cent_dist)
+        γ = QuantEcon.gth_solve(model.y.P)
+        cent_dist = stable_Q * γ # get the equilibrium weighted density
+        λ_grid = cent_dist / sum(cent_dist) # normalize
 
-        λ = LinearInterpolation(finer_grid, cent_dist, extrapolation_bc=Line())
+        λ = LinearInterpolation(finer_grid, λ_grid, extrapolation_bc=Line())
 
     end
 

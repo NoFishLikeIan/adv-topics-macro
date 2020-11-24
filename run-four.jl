@@ -14,9 +14,9 @@ include("src/week-four/partial.jl")
 r = .05
 w = 1.
 
-n_steps = 100
+n_steps = 25
 
-upperbound = 50.
+upperbound = Float64(n_steps)
 
 model = Aiyagari(
         0.9, 0.1, 7, # AR process parameters ρ, σ, N
@@ -26,57 +26,39 @@ model = Aiyagari(
 
 append_filename = r != .05 ? "_$(Int(r * 100))" : ""
 
-a_grids = []
-policies = []
+end_grid = true
 
-for end_grid in [false, true]
+verbose && print("Finding policy function with $(end_grid ? "endogenous grid method" : "policy function iteration")...\n")
 
-    verbose && print("Finding policy function with $(end_grid ? "endogenous grid method" : "policy function iteration")...\n")
-
-    a′, a_grid = policysolve(
-        model, r, w; 
-        n_steps=n_steps, upperbound=upperbound, 
-        verbose=verbose, end_grid=end_grid
-    )
+a′, a_grid = policysolve(
+    model, r, w; 
+    n_steps=n_steps, upperbound=upperbound, 
+    verbose=verbose, end_grid=end_grid
+)
 
 
-    # Plot the policy function
-    plot(title="Policy", xaxis="a", legend=:left)
+# Plot the policy function
+plot(title="Policy", xaxis="a", legend=:left)
 
-    for y in model.y.transformation.(model.y.S)
-        plot!(
-                a_grid,
-                (a -> a′(a, y)).(a_grid),
-                label="a′(a | y = $(@sprintf("%.2f", y)))",
-                xaxis="a"
-            )
-    end
-
-    savefig("src/week-four/solutions/plots/partial/policy$(end_grid ? "_end" : "_pfi")$append_filename.png")
-
-
-    push!(policies, a′)
-    push!(a_grids, a_grid)
+for y in model.y.transformation.(model.y.S)
+    plot!(
+            a_grid,
+            (a -> a′(a, y)).(a_grid),
+            label="a′(a | y = $(@sprintf("%.2f", y)))",
+            xaxis="a"
+        )
 end
 
-a′ = policies[2]
-a_grid = a_grids[2]
+savefig("src/week-four/solutions/plots/partial/policy$(end_grid ? "_end" : "_pfi")$append_filename.png")
+
 
 verbose && print("Finding steady state distribution...\n")
 
-λ_mc = distribution_pdf(a′, a_grid, model; mc=true, verbose=verbose)
 λ_eig =  distribution_pdf(a′, a_grid, model; mc=false, verbose=verbose)
 
-mc_ys = λ_mc.(a_grid) / sum(λ_mc.(a_grid))
+eig_ys = λ_eig.(a_grid)
 
-plot(
-    a_grid, mc_ys, color=:red, label="MC", alpha=0.5,
-    title="Stable distribution", xaxis="a", yaxis="λ(a)"
-)
-
-eig_ys = λ_eig.(a_grid) / sum(λ_eig.(a_grid))
-
-plot!(a_grid, λ_eig, color=:black, label="Eig", alpha=0.5)
+plot(a_grid, eig_ys, color=:black, label="Eig", alpha=0.5)
 
 
 savefig("src/week-four/solutions/plots/partial/stat_dist$append_filename.png")

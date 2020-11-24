@@ -36,7 +36,7 @@ function a_todensity(
         return dens_vec
     end
 
-    return hcat(populate.(Q_aprime)...)
+    return hcat(populate.(Q_aprime)...)'
 end
 
 
@@ -44,12 +44,15 @@ end
 Creates the transition matrix Q ∈ R(NT, NT) as a Markov
 matrix of (a, y) -> (a, y)′
 """
-function computeQ(a′::Function, a_grid::Array{Float64}, ai::Aiyagari)
+function computeQ(
+        a′::Function, a_grid::Array{Float64}, ai::Aiyagari;
+        fact_finer::Int=2
+    )
     ys = ai.y.S
     Γ = ai.y.P
 
     finer_grid = collect(
-        range(a_grid[1], a_grid[end], length=length(a_grid) * 3)
+        range(a_grid[1], a_grid[end], length=length(a_grid) * fact_finer)
     )
 
     double_grid = collect.(Iterators.product(finer_grid, ys))
@@ -57,7 +60,7 @@ function computeQ(a′::Function, a_grid::Array{Float64}, ai::Aiyagari)
     
     Q_aprime = (v -> a′(v...)).(double_grid)
 
-    Q_a = reshape(a_todensity(Q_aprime, finer_grid), (N, N, T))
+    Q_a = a_todensity(Q_aprime, finer_grid)
 
     Q = spzeros(N * T, N * T)
 
@@ -65,7 +68,7 @@ function computeQ(a′::Function, a_grid::Array{Float64}, ai::Aiyagari)
         st = (j - 1) * N + 1
         en = j * N 
 
-        Q[st:en, :] = Γ[j, :]' ⊗ Q_a[:, :, j]'
+        Q[st:en, :] = Q_a[st:en, :] ⊗ Γ[j, :]'
     end
 
     droptol!(Q, 1e-10)
@@ -80,7 +83,7 @@ model with the eigenvector method, given a policy function
 """
 function distribution_eigenvector(
     a′::Function, a_grid::Array{Float64}, model::Aiyagari; 
-    gth=false, verbose=false)
+    gth=true, verbose=false)
 
     verbose && print("Computing Q matrix...\n")
     Q, dims, finer_grid = computeQ(a′, a_grid, model)
