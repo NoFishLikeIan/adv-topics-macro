@@ -16,16 +16,10 @@ end
 Base.size(e::e) = (e.n,)
 
 function matrix_distance(A::Array{Float64,2}, B::Array{Float64,2})::Float64
-    N, M = size(A)
+    
+    d = abs.(vec(A) - vec(B))
 
-    d = 0.
-
-    for col in 1:M
-        m = maximum(abs.(A[:, col] - B[:, col]))
-        d = m > d ? m : d
-    end
-
-    return d
+    return maximum(d)
 end
 
 
