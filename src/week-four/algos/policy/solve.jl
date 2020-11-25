@@ -7,7 +7,7 @@ function E(vals::Array{Float64}, density::Array{Float64})::Float64
     return sum(vals .* density)
 end
 
-
+# TODO: Move to commons 
 function fromVtoFn(x::Vector{Float64}, f::Vector{Float64})
 
     intp = LinearInterpolation((x,), f, extrapolation_bc=(Linear(),))

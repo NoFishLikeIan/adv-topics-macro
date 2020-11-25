@@ -60,14 +60,16 @@ end
 Construct the production functions
 """
 function makeproduction(model::DenHaanModel)
-    @unpack α, l, ζ, S_ϵ = model
+    @unpack δ, α, l, ζ, S_ϵ = model
 
-    w(K, L, z) = (1 - α) * z * (K / (L * l))^α
-    r(K, L, z) = α * z * (K / (L * l))^(α - 1)
+    ϵ = collect(S_ϵ)
     
-    H(z) = 2 # FIXME: Define this
+    H(z) = (ϵ' * π_ϵ(z, model))[1]
 
-    return w, r
+    R(z, K) = 1 + α * z * (K / (H(z) * l))^(α - 1) - δ
+    w(z, K) = (1 - α) * z * (K / (H(z) * l))^α
+
+    return R, w
 end
 
 
@@ -93,7 +95,7 @@ function π_ϵ(z::State, model::DenHaanModel)
 
     if isempty(cond) throw("State $z not in space $S") end
 
-    P_ϵ = rownormal(P[cond, cond])
+    P_ϵ = sum(P[cond, cond], dims=1)
 
-    return P_ϵ
+    return rownormal(P_ϵ)'
 end

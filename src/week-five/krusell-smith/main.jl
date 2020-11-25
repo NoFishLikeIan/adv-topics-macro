@@ -1,3 +1,5 @@
+include("../policy/pfi.jl")
+
 using StatsBase
 
 """
@@ -6,17 +8,16 @@ for a Den Haan et al. model.
 """
 function krusellsmith(
     model::DenHaanModel;
-    ρ=0.7, ϵ_m=1e-3, ϵ_g=1e-3
+    b0=[0., 1.],
+    ρ=0.7, ϵ_m=1e-3, ϵ_g=1e-3,
+    kwargs...
 )
-
     u, u′, inv_u′ = makeutility(model)
-    r, w = makeproduction(model)
+    R, w = makeproduction(model)
 
-    ho_Ψ(b0, b1) = (x) -> exp(b0 + b1 * log(x))
-    Ψ = ho_Ψ(0., 1.)
+    ho_Ψ(b0, b1) = (z, K) -> exp(b0 + b1 * log(K)) # FIXME: How is this depending on z?
+    Ψ = ho_Ψ(b0...) # Initial guess for forecasting rule Ψ
 
-    function R(z::Float64, m̄::Vector{Float64})
-        1 + r(m̅[1]) - δ
-    end
+
 
 end
