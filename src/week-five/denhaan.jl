@@ -12,6 +12,7 @@ const Π = [
 
 
 cartesianstate(s1, s2) = vec(collect(Iterators.product(s1, s2)))
+rownormal(M::Matrix{Float64}) = M ./ sum(M, dims=2)
 
 
 """
@@ -22,6 +23,7 @@ struct DenHaanModel
 
     ζ::StateMarkov
     Δ::Float64
+    S_z::Tuple{Vararg{Float64}}
 
     β::Float64 
     γ::Float64  
@@ -29,32 +31,41 @@ struct DenHaanModel
     δ::Float64  
     l::Float64 
     μ::Float64
+    S_ϵ::Tuple{Vararg{Int}}
 
     function DenHaanModel(
-        Δ::Float64=0.01,
-        β::Float64=0.99,
-        γ::Float64=1.,
-        α::Float64=0.36,
-        δ::Float64=0.025,
-        l::Float64=10 / 9,
-        μ::Float64=0.15)
+        Δ=0.01,
+        β=0.99,
+        γ=1.,
+        α=0.36,
+        δ=0.025,
+        l=10 / 9,
+        μ=0.15,
+        S_ϵ=(0, 1))
+
+        S_z = (1 - Δ, 1 + Δ)
         
-        S = cartesianstate((1 - Δ, 1 + Δ), (0, 1)) # Cartesian product of ϵ and s
+        S = cartesianstate(S_z, S_ϵ) # Cartesian product of ϵ and s
 
         process = StateMarkov(S, Π)
 
-        return new(process, Δ, β, γ, α, δ, l, μ)
+        return new(
+            process, Δ, S_z,
+            β, γ, α, δ, l, μ, S_ϵ)
     end
 end
+
 
 """
 Construct the production functions
 """
 function makeproduction(model::DenHaanModel)
-    @unpack α, l = model
+    @unpack α, l, ζ, S_ϵ = model
 
     w(K, L, z) = (1 - α) * z * (K / (L * l))^α
-    r(K, L, z) = α * z * (K / (L * l))^(α - 1) # FIXME: Does this require R = 1 + f′ - δ?
+    r(K, L, z) = α * z * (K / (L * l))^(α - 1)
+    
+    H(z) = 2 # FIXME: Define this
 
     return w, r
 end
@@ -71,4 +82,18 @@ function makeutility(model::DenHaanModel)
     inv_u′(x) = x^(- 1 / γ)
 
     return u, u′, inv_u′
+end
+
+"""
+Get the Markov matrix for ϵ conditional on z
+"""
+function π_ϵ(z::State, model::DenHaanModel)
+    @unpack S, P = model.ζ
+    cond = findall(st -> st[1] == z, S)
+
+    if isempty(cond) throw("State $z not in space $S") end
+
+    P_ϵ = rownormal(P[cond, cond])
+
+    return P_ϵ
 end
