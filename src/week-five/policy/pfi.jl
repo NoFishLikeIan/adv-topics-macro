@@ -17,7 +17,7 @@ assuming exogenous forecasting rule Ψ
 function pfi(
     prices::NTuple{2,Function}, utils::NTuple{3,Function}, 
     Ψ::Function, model::DenHaanModel, grids_sizes::NTuple{2,Int};
-    max_iter=1_000, tol=1e-3, verbose=false)
+    max_iter=1_000, tol=1e-3, ρ=0.7, verbose=false)
 
     @unpack S_ϵ, S_z, ζ, β = model
     u, u′, invu′ = utils
@@ -71,14 +71,16 @@ function pfi(
             new_policy[i, j, k, l] = a′
         end
 
-        err_distance = matrix_distance(policy, new_policy)
-
+        d = policy - new_policy
+        err_distance = maximum(abs.(d))
         verbose && print("Iteration $iter / $max_iter: $(@sprintf("%.4f", err_distance)) \r")
 
         if err_distance < tol 
             verbose && print("Found policy in $iter iterations (|x - x'| = $(@sprintf("%.4f", err_distance))\n")
             return g
         end
+
+        policy = policy + ρ * d # Update with dumping parameter
     end
 
     throw(ConvergenceException(max_iter))

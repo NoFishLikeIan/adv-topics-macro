@@ -18,6 +18,12 @@ function krusellsmith(
     ho_Ψ(b0, b1) = (z, K) -> exp(b0 + b1 * log(K)) # FIXME: How is this depending on z?
     Ψ = ho_Ψ(b0...) # Initial guess for forecasting rule Ψ
 
+    policy = pfi(
+        makeproduction(model),
+        makeutility(model),
+        Ψ, model, (5, 5);
+        ρ=ρ, kwargs...)
 
+    
 
 end
