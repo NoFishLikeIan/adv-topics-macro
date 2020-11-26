@@ -1,7 +1,3 @@
-include("../../commons/interpolation.jl")
-include("../../commons/matrix.jl")
-include("../denhaan.jl")
-
 using Parameters, Interpolations
 using Base.Threads
 using Roots
@@ -17,7 +13,9 @@ assuming exogenous forecasting rule Ψ
 function pfi(
     prices::NTuple{2,Function}, utils::NTuple{3,Function}, 
     Ψ::Function, model::DenHaanModel, grids_sizes::NTuple{2,Int};
-    max_iter=1_000, tol=1e-3, ρ=0.7, verbose=false)
+    bounds=[.01, 10.],
+    max_iter=1_000, tol=1e-3, ρ=0.7, 
+    verbose=false)
 
     @unpack S_ϵ, S_z, ζ, β = model
     u, u′, invu′ = utils
@@ -29,16 +27,17 @@ function pfi(
     P_cond(state) = ζ.P[findfirst(==(state), ζ.S), :]
     
     N_a, N_m = grids_sizes
-    m_grid = range(0.01, 10., length=N_m)
-    a_grid = range(0.01, 10., length=N_m)
+
+    m_grid = range(bounds..., length=N_m)
+    a_grid = range(bounds..., length=N_a)
 
     policy = ones(N_a, N_m, D_z, D_ϵ)
-    g = fromMtoFn(policy, a_grid, m_grid, ϵ_grid, z_grid)
     
-    for iter in max_iter
+    for iter in 1:max_iter
+        g = fromMtoFn(policy, a_grid, m_grid, ϵ_grid, z_grid)
         new_policy = similar(policy)
 
-        @threads for (i, j, k, l) in cartesianfromsize(N_a, N_m, D_z, D_ϵ)
+        for (i, j, k, l) in cartesianfromsize(N_a, N_m, D_z, D_ϵ)
             # Solve Euler for ā
 
             a, m = a_grid[i], m_grid[j]
@@ -61,17 +60,24 @@ function pfi(
             end
 
             lefteuler(a′) = u′(R(z, m) * a + w(z, m) * ϵ - a′)
-            euler(a′) = lefteuler(a′) - β * P_cond(state)' * righteuler(a′).(ζ.S)
+            euler(a′) = lefteuler(a′) - β * P_cond((z, ϵ))' * righteuler(a′).(ζ.S)
 
-            f1 = euler(a_grid[1])
-            f2 = euler(a_grid[end])
+            f1, f2 = euler.(bounds) # Evaluate the function at the boundaries
+            
+            try
+                a′ = f1 * f2 < 0 ? 
+                    find_zero(euler, bounds) : 
+                    find_zero(euler, bounds[1])
 
-            a′ = f1 * f2 < 0 ? find_zero(euler, [a_grid[1], a_grid[end]]) : find_zero(euler, a)
+                new_policy[i, j, k, l] = a′
 
-            new_policy[i, j, k, l] = a′
+            catch e
+                print("$a, $m, $z, $ϵ\n")
+                throw(e)
+            end
         end
 
-        d = policy - new_policy
+        d = new_policy - policy
         err_distance = maximum(abs.(d))
         verbose && print("Iteration $iter / $max_iter: $(@sprintf("%.4f", err_distance)) \r")
 
@@ -80,7 +86,7 @@ function pfi(
             return g
         end
 
-        policy = policy + ρ * d # Update with dumping parameter
+        policy += ρ * d # Update with dumping parameter
     end
 
     throw(ConvergenceException(max_iter))
