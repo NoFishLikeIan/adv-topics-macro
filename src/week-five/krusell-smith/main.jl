@@ -1,5 +1,3 @@
-include("../policy/pfi.jl")
-
 using StatsBase
 
 """
@@ -23,7 +21,5 @@ function krusellsmith(
         makeutility(model),
         Ψ, model, (5, 5);
         ρ=ρ, kwargs...)
-
-    
 
 end

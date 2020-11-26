@@ -1,5 +1,3 @@
-include("../../week-two/markov/simulation.jl")
-
 using Distributions
 
 State = Union{Any,Tuple{Vararg{Any}}} # make variable type

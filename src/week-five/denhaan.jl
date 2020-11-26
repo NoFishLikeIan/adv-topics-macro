@@ -1,5 +1,3 @@
-include("markov/state.jl")
-
 using Parameters
 
 
