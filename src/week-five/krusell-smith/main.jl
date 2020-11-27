@@ -7,7 +7,8 @@ for a Den Haan et al. model.
 function krusellsmith(
     model::DenHaanModel;
     b0=[0., 1.],
-    ρ=0.7, ϵ_m=1e-3, ϵ_g=1e-3,
+    ρ=0.7, N_a=100, N_m=10,
+    ϵ_m=1e-3, ϵ_g=1e-3,
     kwargs...
 )
     u, u′, inv_u′ = makeutility(model)
@@ -19,7 +20,7 @@ function krusellsmith(
     policy = pfi(
         makeproduction(model),
         makeutility(model),
-        Ψ, model, (5, 5);
+        Ψ, model, (N_a, N_m);
         ρ=ρ, kwargs...)
 
 end

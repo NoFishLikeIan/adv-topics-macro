@@ -4,6 +4,7 @@ include("src/commons/matrix.jl")
 include("src/week-five/markov/state.jl")
 include("src/week-five/denhaan.jl")
 include("src/week-five/policy/endgrid.jl")
+include("src/week-five/krusell-smith/simulate.jl")
 include("src/week-five/krusell-smith/main.jl")
 
 
@@ -11,7 +12,7 @@ using Plots
 
 default(dpi=600)
 
-do_policy = false
+do_policy = true
 plot_path = "src/week-five/solutions/plots/"
 model = DenHaanModel()
 
