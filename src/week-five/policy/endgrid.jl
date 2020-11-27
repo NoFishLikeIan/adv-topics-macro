@@ -46,7 +46,7 @@ function endgrid_method(
         function next_value(state::Tuple{Float64,Int}, Ψ′, a′)
             z′, ϵ′ = state
             ϵ′ = convert(Float64, ϵ′)
-            return R(z′, Ψ′) * u′(c(a′, Ψ′, z′, ϵ′, g)) - g(a′, Ψ′, ϵ′, z′)
+            return R(z′, Ψ′) * u′(c(a′, Ψ′, z′, ϵ′, g))
         end
 
         inv_policy = similar(policy)

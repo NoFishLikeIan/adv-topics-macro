@@ -121,7 +121,7 @@ function makeconsumption(model::DenHaanModel)
     Default consumption function based on parameters
     """
     function consumption(a, k, z, ϵ, g)
-        return R(z, k) * a + tax(z, ϵ) * w(z, k) + - g(a, k, ϵ, z)
+        return R(z, k) * a + tax(z, ϵ) * w(z, k) - g(a, k, ϵ, z)
     end
 
     function invconsumption(x, k, z, ϵ, a′)
