@@ -12,7 +12,7 @@ function krusellsmith(
     kwargs...
 )
     u, u′, inv_u′ = makeutility(model)
-    R, w = makeproduction(model)
+    R, w, τ = makeproduction(model)
 
     ho_Ψ(b0, b1) = (z, K) -> exp(b0 + b1 * log(K)) # FIXME: How is this depending on z?
     Ψ = ho_Ψ(b0...) # Initial guess for forecasting rule Ψ

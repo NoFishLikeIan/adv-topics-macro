@@ -13,16 +13,19 @@ cartesianfromsize(Ns...) = collect(
 Compute a policy using the endogenous grid method, 
 assuming exogenous forecasting rule Ψ
 """
-function endgrid_method(
-    prices::NTuple{2,Function}, utils::NTuple{3,Function}, 
+function endgrid_method( 
     Ψ::Function, model::DenHaanModel, grids_sizes::NTuple{2,Int};
     grid_bounds=[.01, 10.],
     max_iter=1_000, tol=1e-3, ρ=0.7, 
     verbose=false)
 
-    @unpack S_ϵ, S_z, ζ, β = model
-    u, u′, invu′ = utils
-    R, w = prices
+    @unpack S_ϵ, S_z, ζ = model
+    @unpack β, l, δ, μ = model
+
+    u, u′, invu′ = makeutility(model)
+    R, w, τ = makeproduction(model)
+    c, invc = makeconsumption(model)
+    
 
     ϵ_grid = collect(Float64, S_ϵ)
     z_grid = collect(S_z)
@@ -40,23 +43,11 @@ function endgrid_method(
     for iter in 1:max_iter
         g = (x -> max(x, 0.)) ∘ fromMtoFn(policy, a_grid, m_grid, ϵ_grid, z_grid)
         
-        """
-        Given the current policy function compute
-            next period consumption.
-        """
-        function next_consumption(
-            state::Tuple{Float64,Int}, 
-            Ψ′::Float64, a′::Float64)
+        function next_value(state::Tuple{Float64,Int}, Ψ′, a′)
             z′, ϵ′ = state
             ϵ′ = convert(Float64, ϵ′)
-        
-            rate = R(z′, Ψ′)
-            wage = w(z′, Ψ′)
-        
-            return rate * u′(rate * a′ + wage * ϵ′) - g(a′, Ψ′, ϵ′, z′)
+            return R(z′, Ψ′) * u′(c(a′, Ψ′, z′, ϵ′, g)) - g(a′, Ψ′, ϵ′, z′)
         end
-
-        # TODO: Nested loop or two loops?
 
         inv_policy = similar(policy)
 
@@ -67,8 +58,8 @@ function endgrid_method(
 
             Ψ′ = Ψ(z, m)
 
-            rhs = β * P_cond((z, ϵ))' * next_consumption.(ζ.S, Ψ′, a′)
-            a = (invu′(rhs) + a′ - w(z, m) * ϵ) / R(z, m)
+            rhs = β * P_cond((z, ϵ))' * next_value.(ζ.S, Ψ′, a′)
+            a = invc(invu′(rhs), m, z, ϵ, a′)
 
             inv_policy[i, j, k, l] = a
         end
