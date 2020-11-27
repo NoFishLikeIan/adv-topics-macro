@@ -64,7 +64,8 @@ end
 Construct the production functions
 """
 function makeproduction(model::DenHaanModel)
-    @unpack δ, α, l, ζ, S_ϵ = model
+    @unpack δ, α, l, μ = model
+    @unpack ζ, S_ϵ = model
 
     ϵ = collect(S_ϵ)
     
@@ -73,7 +74,9 @@ function makeproduction(model::DenHaanModel)
     R(z, K) = 1 + α * z * (K / (H(z) * l))^(α - 1) - δ
     w(z, K) = (1 - α) * z * (K / (H(z) * l))^α
 
-    return R, w
+    τ(z) = (μ / l) * (-1 + 1 / H(z))
+
+    return R, w, τ
 end
 
 
@@ -103,3 +106,27 @@ function π_ϵ(z::State, model::DenHaanModel)
 
     return rownormal(P_ϵ)'
 end
+
+"""
+
+"""
+function makeconsumption(model::DenHaanModel)
+
+    @unpack μ, l = model
+    R, w, τ = makeproduction(model)
+
+    tax(z, ϵ) = (1 - τ(z)) * l * ϵ + μ * (1 - ϵ)
+
+    """
+    Default consumption function based on parameters
+    """
+    function consumption(a, k, z, ϵ, g)
+        return R(z, k) * a + tax(z, ϵ) * w(z, k) + - g(a, k, ϵ, z)
+    end
+
+    function invconsumption(x, k, z, ϵ, a′)
+        return (x - tax(z, ϵ) * w(z, k) - a′) / R(z, k)
+    end
+
+    return consumption, invconsumption
+end  
