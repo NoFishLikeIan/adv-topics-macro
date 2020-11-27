@@ -37,7 +37,8 @@ end
 Simulate conditionally on an aggregate vector of shock
 """
 function conditional_simulation(
-    jointmarkov::StateMarkov, aggshock::Vector{State}, N::Int)::Matrix{Float64}
+    jointmarkov::StateMarkov, aggshock::Vector{State}, N::Int;
+    drop=0)::Matrix{Float64}
 
     @unpack S, P = jointmarkov
 
@@ -71,6 +72,9 @@ function conditional_simulation(
         sim_jdx[t + 1, :] = @. F_inv(sampled_u, sim_jdx[t, :])
     end
 
-    sim = (j -> S_z[j]).(sim_jdx)
+    # FIXME: Drop should happen before
+    sim = (j -> S_z[j]).(sim_jdx[drop + 1:end, :]) 
+
+    return sim
     
 end
