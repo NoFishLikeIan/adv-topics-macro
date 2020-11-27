@@ -1,16 +1,18 @@
 using Parameters, Kronecker
 
 # exogenous transition matrices as specified in the paper
-const P_z = [
-    0.875 (1 - 0.875); 
-    0.15625 (1 - 0.15625)]
-
-const P_ϵ = [
+P_ϵ = [
     0.6 0.4; 
     2 / 45 43 / 45
 ] 
 
-const Π = P_z ⊗ P_ϵ
+Π = [
+    0.525 0.35 0.03125 0.09375;
+    0.038889 0.836111 0.002083 0.122917;
+    0.09375 0.03125 0.291667 0.583333; 
+    0.009115 0.115885 0.024306 0.850694
+]
+
 
 cartesianstate(s1, s2) = vec(collect(Iterators.product(s1, s2)))
 rownormal(M::Matrix{Float64}) = M ./ sum(M, dims=2)
@@ -48,7 +50,7 @@ struct DenHaanModel
         S = cartesianstate(S_z, S_ϵ) # Cartesian product of ϵ and s
 
         joint_process = StateMarkov(S, Π)
-        ϵ_process = StateMarkov(S_ϵ, P_ϵ)
+        ϵ_process = StateMarkov(collect(S_ϵ), P_ϵ)
 
         return new(
             ϵ_process, joint_process, 
