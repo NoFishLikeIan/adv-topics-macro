@@ -1,16 +1,7 @@
 using Parameters, Interpolations
 using Base.Threads
-using Roots
 
 using Logging, Printf
-
-cartesianfromsize(Ns...) = collect(
-    Iterators.product((1:N for N in Ns)...)
-)
-
-function positive(x) 
-    isnan(x) ? Inf : max(x, 0.)
-end
 
 """
 Compute a policy using the endogenous grid method, 
@@ -41,10 +32,10 @@ function endgrid_method(
     a_grid = range(grid_bounds..., length=N_a)
 
     policy = repeat(a_grid, 1, N_m, D_z, D_ϵ)
-    space = collect.(Iterators.product(a_grid, m_grid, ϵ_grid, z_grid)) 
+    space = collect.(Iterators.product(a_grid, m_grid, z_grid, ϵ_grid)) 
 
     for iter in 1:max_iter
-        g = positive ∘ fromMtoFn(policy, a_grid, m_grid, ϵ_grid, z_grid)
+        g = positive ∘ fromMtoFn(policy, a_grid, m_grid, z_grid, ϵ_grid)
         
         function next_value(state::Tuple{Float64,Int}, Ψ′, a′)
             z′, ϵ′ = state

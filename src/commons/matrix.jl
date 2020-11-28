@@ -39,3 +39,7 @@ function cachematrix(
 
     return filepath, filename
 end
+
+cartesianfromsize(Ns...) = collect(
+    Iterators.product((1:N for N in Ns)...)
+)

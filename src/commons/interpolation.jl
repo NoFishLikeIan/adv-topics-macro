@@ -20,3 +20,7 @@ function fromMtoFn(m, xs...)
 
     return fn
 end
+
+function positive(x) 
+    isnan(x) ? Inf : max(x, 0.)
+end
