@@ -37,26 +37,24 @@ end
 Simulate conditionally on an aggregate vector of shock
 """
 function conditional_simulation(
-    jointmarkov::StateMarkov, aggshock::Vector{State}, N::Int;
+    model::DenHaanModel, aggshock::Vector{State}, N::Int;
     drop=0)::Matrix{Float64}
 
-    @unpack S, P = jointmarkov
-
-    S_z = unique([st[1] for st in S])
+    @unpack S_ϵ, S_z, ζ = model
+    @unpack S, P = ζ
 
     T = length(aggshock)
 
-    # Construct an array of π(z′ | ϵ′, z, ϵ) conditional transition matrices
-    rzeros = findall(st -> st[2] == 0, S) 
-    rones = findall(st -> st[2] == 1, S)
+    # Construct an array of π(ϵ′ | z, ϵ, z′) conditional transition matrices
+    recession = findall(st -> st[1] == S_z[1], S) 
+    boom = findall(st -> st[1] == S_z[2], S)
 
-    Ns = length(rzeros)
+    Ns = length(recession)
     shock_Ps = Array{Float64}(undef, T - 1, Ns, Ns)
 
-    # TODO: Check the order of the simulation
     @threads for t in 2:T
-        from = aggshock[t - 1] == 1 ? rones : rzeros
-        to = aggshock[t] == 1 ? rones : rzeros
+        from = aggshock[t - 1] == S_z[1] ? recession : boom
+        to = aggshock[t] == S_z[1] ? recession : boom
 
         shock_Ps[t - 1, :, :] = rownormal(P[from, to])
     end
@@ -72,8 +70,7 @@ function conditional_simulation(
         sim_jdx[t + 1, :] = @. F_inv(sampled_u, sim_jdx[t, :])
     end
 
-    # FIXME: Drop should happen before
-    sim = (j -> S_z[j]).(sim_jdx[drop + 1:end, :]) 
+    sim = sim_jdx[drop + 1:end, :] .- 1
 
     return sim
     
