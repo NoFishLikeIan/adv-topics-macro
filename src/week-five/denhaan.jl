@@ -17,6 +17,12 @@ P_ϵ = [
 cartesianstate(s1, s2) = vec(collect(Iterators.product(s1, s2)))
 rownormal(M::Matrix{Float64}) = M ./ sum(M, dims=2)
 
+P_z = rownormal([
+    sum(Π[1:2, 1:2]) sum(Π[1:2, 3:4]);
+    sum(Π[3:4, 1:2]) sum(Π[3:4, 3:4])
+])
+
+
 
 """
 Specification for the Aggregate Uncertainty model from
@@ -24,6 +30,7 @@ Specification for the Aggregate Uncertainty model from
 """
 struct DenHaanModel
     Ε::StateMarkov
+    Z::StateMarkov
     ζ::StateMarkov
     S_z::Tuple{Vararg{Float64}}
     S_ϵ::Tuple{Vararg{Int}}
@@ -51,9 +58,10 @@ struct DenHaanModel
 
         joint_process = StateMarkov(S, Π)
         ϵ_process = StateMarkov(collect(S_ϵ), P_ϵ)
+        z_process = StateMarkov(collect(S_z), P_z)
 
         return new(
-            ϵ_process, joint_process, 
+            ϵ_process, z_process, joint_process, 
             S_z, S_ϵ,
             β, γ, α, δ, l, μ)
     end
