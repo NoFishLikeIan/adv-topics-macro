@@ -13,7 +13,7 @@ using Plots
 
 # default(dpi=600)
 
-do_policy = true
+do_policy = false
 plot_path = "src/week-five/solutions/plots/"
 model = DenHaanModel()
 
@@ -48,4 +48,23 @@ if do_policy
     savefig("$plot_path/policy.png")
 end
 
+# Test algorithm
 
+g = krusellsmith(
+    model;
+    verbose=true,
+    ρ=0.5
+)
+
+fix_m = 1.
+as = range(0.01, 10., length=100)
+
+plot(title="Policy function", legend=:left, xlabel="a", ylabel="a′(a)")
+
+for (z_f, ϵ_f) in model.ζ.S
+    ys_pol = g.(as, fix_m, z_f, collect(Float64, ϵ_f))
+    plot!(as, ys_pol,
+        label="a′(a | $z_f, $ϵ_f)")
+end
+
+savefig("$plot_path/policy_krusell.png")

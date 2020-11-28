@@ -6,29 +6,26 @@ Simulate the economy for N individuals and T periods
 function economysim(
     g::Function, model::DenHaanModel;
     N::Int=10_000, T::Int=1_500, verbose=false)
+    
+    zs = simulation(model.Z, T)
+    ϵs = conditional_simulation(model, zs, N)
 
-    a0 = rand(Uniform(10., 20.), N)
+    as = similar(ϵs)
+    as[1, :] = rand(Uniform(), 1, N)
 
-    ϵs = simulation(model.Ε, T)
-    zs = conditional_simulation(model.ζ, ϵs, N)
-
-    as = Array{Float64}(undef, T, N)
-    as[1, :] = a0
-
-    for (t, ϵ) in enumerate(collect(Float64, ϵs))
-        verbose && print("Simulating economy $t / $T\r")
-        z = zs[t, :]
+    for (t, z) in enumerate(zs[1:end - 1])
+        verbose && print("Simulating economy $t / $(T - 1)\r")
+        ϵ = ϵs[t, :]
         a = as[t, :]
 
         m = mean(a)
 
         a′ = @. g(a, m, z, ϵ)
-        as[t, :] = a′
+        as[t + 1, :] = a′
     end
 
     verbose && print("\n")
 
-    return as
-
+    return as, zs
 end
 
