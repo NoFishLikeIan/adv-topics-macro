@@ -53,7 +53,7 @@ function endgrid_method(
             Ψ′ = Ψ(z, m)
 
             rhs = β * P_cond((z, ϵ))' * next_value.(ζ.S, Ψ′, a′)
-            c′ = positive(invu′(rhs))
+            c′ = invu′(rhs)
             a = invc(c′, m, z, ϵ, a′)
 
             inv_policy[i, j, k, l] = a
@@ -66,7 +66,7 @@ function endgrid_method(
             ixs = sortperm(origin_a)
 
             forward_policy = LinearInterpolation(origin_a[ixs], a_grid[ixs], extrapolation_bc=Line())
-            new_policy[:, j, k, l] = @. positive(forward_policy(a_grid))
+            new_policy[:, j, k, l] = forward_policy.(a_grid)
         end
 
         d = new_policy - policy
