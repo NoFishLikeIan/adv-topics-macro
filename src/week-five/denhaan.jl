@@ -102,14 +102,12 @@ function π_ϵ(z::State, model::DenHaanModel)
 
     if isempty(cond) throw("State $z not in space $S") end
 
-    P_ϵ = sum(P[cond, cond], dims=1)
+    P_ϵ = sum(P[:, cond], dims=1)
 
     return rownormal(P_ϵ)'
 end
 
-"""
 
-"""
 function makeconsumption(model::DenHaanModel)
 
     @unpack μ, l = model
@@ -120,12 +118,12 @@ function makeconsumption(model::DenHaanModel)
     """
     Default consumption function based on parameters
     """
-    function consumption(a, k, z, ϵ, g)
-        return R(z, k) * a + tax(z, ϵ) * w(z, k) - g(a, k, ϵ, z)
+    function consumption(a, K, z, ϵ, g)
+        return R(z, K) * a + tax(z, ϵ) * w(z, K) - g(a, K, ϵ, z)
     end
 
-    function invconsumption(x, k, z, ϵ, a′)
-        return (x - tax(z, ϵ) * w(z, k) - a′) / R(z, k)
+    function invconsumption(x, K, z, ϵ, a′)
+        return (x - tax(z, ϵ) * w(z, K) - a′) / R(z, K)
     end
 
     return consumption, invconsumption

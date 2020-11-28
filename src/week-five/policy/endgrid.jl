@@ -8,6 +8,9 @@ cartesianfromsize(Ns...) = collect(
     Iterators.product((1:N for N in Ns)...)
 )
 
+function positive(x) 
+    isnan(x) ? Inf : max(x, 0.)
+end
 
 """
 Compute a policy using the endogenous grid method, 
@@ -25,7 +28,7 @@ function endgrid_method(
     u, u′, invu′ = makeutility(model)
     R, w, τ = makeproduction(model)
     c, invc = makeconsumption(model)
-    
+
 
     ϵ_grid = collect(Float64, S_ϵ)
     z_grid = collect(S_z)
@@ -37,11 +40,11 @@ function endgrid_method(
     m_grid = range(grid_bounds..., length=N_m)
     a_grid = range(grid_bounds..., length=N_a)
 
-    policy = ones(N_a, N_m, D_z, D_ϵ)
+    policy = repeat(a_grid, 1, N_m, D_z, D_ϵ)
     space = collect.(Iterators.product(a_grid, m_grid, ϵ_grid, z_grid)) 
 
     for iter in 1:max_iter
-        g = (x -> max(x, 0.)) ∘ fromMtoFn(policy, a_grid, m_grid, ϵ_grid, z_grid)
+        g = positive ∘ fromMtoFn(policy, a_grid, m_grid, ϵ_grid, z_grid)
         
         function next_value(state::Tuple{Float64,Int}, Ψ′, a′)
             z′, ϵ′ = state
@@ -59,7 +62,8 @@ function endgrid_method(
             Ψ′ = Ψ(z, m)
 
             rhs = β * P_cond((z, ϵ))' * next_value.(ζ.S, Ψ′, a′)
-            a = invc(invu′(rhs), m, z, ϵ, a′)
+            c′ = positive(invu′(rhs))
+            a = invc(c′, m, z, ϵ, a′)
 
             inv_policy[i, j, k, l] = a
         end
@@ -71,7 +75,7 @@ function endgrid_method(
             ixs = sortperm(origin_a)
 
             forward_policy = LinearInterpolation(origin_a[ixs], a_grid[ixs], extrapolation_bc=Line())
-            new_policy[:, j, k, l] = @. max(forward_policy(a_grid), 0.0)
+            new_policy[:, j, k, l] = @. positive(forward_policy(a_grid))
         end
 
         d = new_policy - policy
