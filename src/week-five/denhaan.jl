@@ -124,9 +124,12 @@ function makeconsumption(model::DenHaanModel)
     function consumption(a′::Float64, a::Float64, m::Float64, z::Float64, ϵ::Float64)
         return consumption(a, m, z, ϵ, (_...) -> a′)
     end
+    function consumption(x::Vector{Float64})
+        return consumption(x...)
+    end
 
     function invconsumption(x, K, z, ϵ, a′)
-        return (x - tax(z, ϵ) * w(z, K) - a′) / R(z, K)
+        return (x - tax(z, ϵ) * w(z, K) + a′) / R(z, K)
     end
 
     return consumption, invconsumption
