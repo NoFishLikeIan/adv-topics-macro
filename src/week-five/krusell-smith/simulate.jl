@@ -7,16 +7,18 @@ TODO: move to only one loop combining the conditional simulation
 """
 function economysim(
     g::Function, model::DenHaanModel;
-    N::Int=10_000, T::Int=1_500, verbose=false)
-    
-    zs = simulation(model.Z, T)
+    drop::Int=500, N::Int=10_000, T::Int=1_500, verbose=false)
+
+    T′ = T - drop
+    zs = simulation(model.Z, T)[drop + 1:end]
+
     ϵs = conditional_simulation(model, zs, N)
 
     as = similar(ϵs)
     as[1, :] = rand(Uniform(), 1, N)
 
     for (t, z) in enumerate(zs[1:end - 1])
-        verbose && print("Simulating economy $t / $(T - 1)\r")
+        verbose && print("Simulating economy $t / $(T′ - 1)\r")
         ϵ = ϵs[t, :]
         a = as[t, :]
 

@@ -24,7 +24,8 @@ for a Den Haan et al. model.
 function krusellsmith(
     model::DenHaanModel;
     ρ=0.7, N_a=100, N_m=10,
-    ϵ_m=1e-3, max_iter=1_000,
+    ϵ_m=1e-1, ϵ_a=1e-2,
+    max_iter=1_000,
     kwargs...
 )
     @unpack S_z = model
@@ -44,19 +45,11 @@ function krusellsmith(
 
     B_g = B_b = [1., 2.] # Initial guess for forecasting rule Ψ
 
-    X = Array{Float64}(undef, T - 1, 4) # regressors
-
     for iter in 1:max_iter
         Ψ = ho_Ψ(B_g, B_b)
 
-        verbose && print("Computing policy...\n")
-        policy = endgrid_method(
-            Ψ, model, (N_a, N_m);
-            tol=1e-2,
-            grid_bounds=[0.01, 10.],
-            ρ=ρ, kwargs...)
+        policy = endgrid_method(Ψ, model, (N_a, N_m); tol=ϵ_a, ρ=ρ, kwargs...)
 
-        verbose && print("\n")
         as, zs = economysim(policy, model; kwargs...)
         ms = log.(mean(as, dims=2))
 
@@ -69,10 +62,10 @@ function krusellsmith(
 
         err_distance = maximum(abs.(vcat(d_g, d_b)))
 
-        verbose && print("Ψ iteration: $iter / $max_iter: $(@sprintf("%.4f", err_distance))...\n")
+        verbose && print("Ψ iteration: $iter / $max_iter: $(@sprintf("%.4f", err_distance))...\n\n")
 
         if err_distance < ϵ_m 
-            verbose && print("Found policy in $iter iterations (|x - x'| = $(@sprintf("%.4f", err_distance))\n")
+            verbose && print("Found policy in $iter iterations (|x - x'| = $(@sprintf("%.4f", err_distance))\n\n")
             return policy
         end
 

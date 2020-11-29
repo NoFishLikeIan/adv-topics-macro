@@ -12,9 +12,8 @@ end
 
 function simulation(
     markov::StateMarkov, T::Int; 
-    drop::Int=0, s0::State=nothing)::Vector{State}
+    s0::State=nothing)::Vector{State}
 
-    if drop > T throw("Variables to drop ($drop) > total ($total)") end
     if !isnothing(s0) && s0 ∉ markov.S throw("Initial state not in state space") end
     F_inv = make_inv_F(pseudoF(markov.P))
     
@@ -27,8 +26,7 @@ function simulation(
         evolution_jdx[t + 1] = F_inv(u, evolution_jdx[t])
     end
 
-    start = drop + 1
-    sim = [markov.S[j] for j in evolution_jdx[start:end]]
+    sim = [markov.S[j] for j in evolution_jdx[1:end]]
 
     return sim
 end
@@ -37,8 +35,7 @@ end
 Simulate conditionally on an aggregate vector of shock
 """
 function conditional_simulation(
-    model::DenHaanModel, aggshock::Vector{State}, N::Int;
-    drop=0)::Matrix{Float64}
+    model::DenHaanModel, aggshock::Vector{State}, N::Int)::Matrix{Float64}
 
     @unpack S_ϵ, S_z, ζ = model
     @unpack S, P = ζ
@@ -70,7 +67,7 @@ function conditional_simulation(
         sim_jdx[t + 1, :] = @. F_inv(sampled_u, sim_jdx[t, :])
     end
 
-    sim = sim_jdx[drop + 1:end, :] .- 1
+    sim = sim_jdx .- 1
 
     return sim
     
