@@ -14,6 +14,8 @@ using Plots
 # default(dpi=600)
 
 do_policy = false
+do_smith = true
+
 plot_path = "src/week-five/solutions/plots/"
 model = DenHaanModel()
 
@@ -26,11 +28,11 @@ if do_policy
     
     ho_Ψ(b0, b1) = (z, K) -> exp(b0 + b1 * log(K))
 
-    Ψ = ho_Ψ(0., 1.)
+    Ψ = ho_Ψ(1., 2.)
     
     g = endgrid_method(
         Ψ, model, (N_a, N_m);
-        grid_bounds=[.01, 10.], tol=3e-1,
+        grid_bounds=[.01, 10.], tol=1e-2,
         ρ=0.5, verbose=true, max_iter=5_000)
 
 
@@ -50,21 +52,23 @@ end
 
 # Test algorithm
 
-g = krusellsmith(
-    model;
-    verbose=true,
-    ρ=0.5
-)
+if do_smith
+    g = krusellsmith(
+        model;
+        verbose=true,
+        ρ=0.5
+    )
 
-fix_m = 1.
-as = range(0.01, 10., length=100)
+    fix_m = 1.
+    as = range(0.01, 10., length=100)
 
-plot(title="Policy function", legend=:left, xlabel="a", ylabel="a′(a)")
+    plot(title="Policy function", legend=:left, xlabel="a", ylabel="a′(a)")
 
-for (z_f, ϵ_f) in model.ζ.S
-    ys_pol = g.(as, fix_m, z_f, collect(Float64, ϵ_f))
-    plot!(as, ys_pol,
-        label="a′(a | $z_f, $ϵ_f)")
+    for (z_f, ϵ_f) in model.ζ.S
+        ys_pol = g.(as, fix_m, z_f, collect(Float64, ϵ_f))
+        plot!(as, ys_pol,
+            label="a′(a | $z_f, $ϵ_f)")
+    end
+
+    savefig("$plot_path/policy_krusell.png")
 end
-
-savefig("$plot_path/policy_krusell.png")

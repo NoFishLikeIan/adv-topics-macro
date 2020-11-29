@@ -18,8 +18,10 @@ function endgrid_method(
 
     u, u′, invu′ = makeutility(model)
     R, w, τ = makeproduction(model)
-    c, invc = makeconsumption(model)
+    cons, invcons = makeconsumption(model)
 
+    c = positive ∘ cons
+    invc = positive ∘ invcons
 
     ϵ_grid = collect(Float64, S_ϵ)
     z_grid = collect(S_z)
