@@ -10,7 +10,7 @@ assuming exogenous forecasting rule Ψ
 function endgrid_method( 
     Ψ::Function, model::DenHaanModel, grids_sizes::NTuple{2,Int};
     grid_bounds=[.01, 10.],
-    max_iter=1_000, tol=1e-3, ρ=0.7, 
+    max_iter=1_000, tol=1e-3, 
     verbose=false)
 
     @unpack S_ϵ, S_z, ζ = model
@@ -80,6 +80,7 @@ function endgrid_method(
             return g
         end
 
+        ρ = .8 - iter / max_iter # Dynamic dumping parameter
         policy += ρ * d # Update with dumping parameter
     end
 

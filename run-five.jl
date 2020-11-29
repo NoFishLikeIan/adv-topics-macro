@@ -33,7 +33,7 @@ if do_policy
     g = endgrid_method(
         Ψ, model, (N_a, N_m);
         grid_bounds=[.01, 10.], tol=1e-2,
-        ρ=0.5, verbose=true, max_iter=5_000)
+        verbose=true, max_iter=5_000)
 
 
     fix_m = 1.

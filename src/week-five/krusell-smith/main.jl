@@ -48,7 +48,7 @@ function krusellsmith(
     for iter in 1:max_iter
         Ψ = ho_Ψ(B_g, B_b)
 
-        policy = endgrid_method(Ψ, model, (N_a, N_m); tol=ϵ_a, ρ=ρ, kwargs...)
+        policy = endgrid_method(Ψ, model, (N_a, N_m); tol=ϵ_a, kwargs...)
 
         as, zs = economysim(policy, model; kwargs...)
         ms = log.(mean(as, dims=2))
