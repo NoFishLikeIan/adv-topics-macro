@@ -1,60 +1,73 @@
 using StatsBase
 
+function regress_m(logm::Vector{Float64}, boom::BitArray{1})
+    
+    afterboom = circshift(boom, 1) # All periods that follow a boom
+
+    gX = hcat(ones(size(logm[boom])), logm[boom])
+    gY = logm[afterboom]
+
+    β_g = inv(gX'gX) * gX'gY
+
+    bX = hcat(ones(size(logm[.!boom])), logm[.!boom])
+    bY = logm[.!afterboom]
+
+    β_b = inv(bX'bX) * bX'bY
+    
+    return β_b, β_g
+end
+
 """
 Implements the Krusell-Smith Algorithm over a cross-sectional distribution λ
 for a Den Haan et al. model.
 """
 function krusellsmith(
     model::DenHaanModel;
-    B0=[0., 0., 0., 1.],
     ρ=0.7, N_a=100, N_m=10,
     ϵ_m=1e-3, max_iter=1_000,
     kwargs...
 )
+    @unpack S_z = model
     u, u′, inv_u′ = makeutility(model)
     R, w, τ = makeproduction(model)
 
-    function ho_Ψ(B)
+    function ho_Ψ(B_g, B_b)
         function Ψ(z, K)
-            boom = z == 1.01 ? 1. : 0.
-
-            return exp(B' * [1., boom, boom * log(K), log(K)])
+            boom = (z == S_z[end])
+            b0, b1 = boom ? B_g : B_b
+            Ψ′ = exp(b0 + b1 * log(K))
+            return Ψ′
         end
 
         return Ψ
     end
 
-    B = B0 # Initial guess for forecasting rule Ψ
+    B_g = B_b = [1., 2.] # Initial guess for forecasting rule Ψ
 
     X = Array{Float64}(undef, T - 1, 4) # regressors
 
     for iter in 1:max_iter
-        Ψ = ho_Ψ(B)
+        Ψ = ho_Ψ(B_g, B_b)
 
         verbose && print("Computing policy...\n")
         policy = endgrid_method(
             Ψ, model, (N_a, N_m);
-            tol=3e-1,
+            tol=1e-2,
             grid_bounds=[0.01, 10.],
             ρ=ρ, kwargs...)
 
-        verbose && print("simulating economy...\n")
+        verbose && print("\n")
         as, zs = economysim(policy, model; kwargs...)
         ms = log.(mean(as, dims=2))
 
-        X[:, 1] .= 1.
-        X[:, 2] = [z == 1.01 ? 1. : 0. for z in zs[1:end - 1]]
-        X[:, 3] = ms[1:end - 1] .* X[:, 2]
-        X[:, 4] = ms[1:end - 1]
+        booms = (zs .== S_z[end])
 
-        y = ms[2:end]
+        B_b′, B_g′ = regress_m(vec(ms), booms)
+        
+        d_g = B_g′ - B_g
+        d_b = B_b′ - B_b
 
-        B′ = inv(X' * X) * X'y
-        verbose && print("OLSing, new coefficients $(B′)...\n")
-
-        d = B′ - B
-
-        err_distance = maximum(abs.(d))
+        err_distance = maximum(abs.(vcat(d_g, d_b)))
 
         verbose && print("Ψ iteration: $iter / $max_iter: $(@sprintf("%.4f", err_distance))...\n")
 
@@ -63,7 +76,8 @@ function krusellsmith(
             return policy
         end
 
-        B = B′
+        B_g += ρ * d_g
+        B_b += ρ * d_b
 
     end
 end

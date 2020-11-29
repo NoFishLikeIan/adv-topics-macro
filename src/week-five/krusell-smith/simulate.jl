@@ -2,6 +2,8 @@
 """
 Simulate the economy for N individuals and T periods
     given a policy function
+        
+TODO: move to only one loop combining the conditional simulation 
 """
 function economysim(
     g::Function, model::DenHaanModel;
