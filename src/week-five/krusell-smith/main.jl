@@ -27,7 +27,10 @@ function krusellsmith(
     ϵ_m=1e-1, ϵ_a=1e-2,
     max_iter=1_000,
     kwargs...
-)
+)   
+
+    verbose = kwargs[:verbose]
+
     @unpack S_z = model
     u, u′, inv_u′ = makeutility(model)
     R, w, τ = makeproduction(model)
@@ -48,7 +51,7 @@ function krusellsmith(
     for iter in 1:max_iter
         Ψ = ho_Ψ(B_g, B_b)
 
-        policy = endgrid_method(Ψ, model, (N_a, N_m); tol=ϵ_a, kwargs...)
+        policy = endgrid_method(Ψ, model, (N_a, N_m); tol=ϵ_a, ρ0=1., kwargs...)
 
         as, zs = economysim(policy, model; kwargs...)
         ms = log.(mean(as, dims=2))
