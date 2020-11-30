@@ -35,7 +35,7 @@ end
 Simulate conditionally on an aggregate vector of shock
 """
 function conditional_simulation(
-    model::DenHaanModel, aggshock::Vector{State}, N::Int)::Matrix{Float64}
+    model, aggshock::Vector{State}, N::Int)::Matrix{Float64}
 
     @unpack S_ϵ, S_z, ζ = model
     @unpack S, P = ζ
