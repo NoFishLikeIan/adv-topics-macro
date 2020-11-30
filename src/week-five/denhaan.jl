@@ -115,6 +115,21 @@ function π_ϵ(z::State, model::DenHaanModel)
     return rownormal(P_ϵ)'
 end
 
+"""
+Get Markov transition for ϵ′ | z′, z, ϵ
+"""
+function π_ϵ′(z′::State, z::State, model::DenHaanModel)
+    @unpack S, P = model.ζ
+    from = findall(st -> st[1] == z, S)
+    to = findall(st -> st[1] == z′, S)
+
+    if isempty(from) || isempty(to) throw("State $z not in space $S") end
+
+    P_ϵ = P[from, to]
+
+    return rownormal(P_ϵ)'
+end
+
 
 function makeconsumption(model::DenHaanModel)
 

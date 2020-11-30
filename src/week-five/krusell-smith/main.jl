@@ -26,8 +26,8 @@ function krusellsmith(
     ρ=0.7, N_a=100, N_m=10,
     ϵ_m=1e-1, ϵ_a=1e-2,
     max_iter=1_000,
-    kwargs...
-)   
+    stoch=true,
+    kwargs...)   
 
     verbose = kwargs[:verbose]
 
@@ -51,7 +51,7 @@ function krusellsmith(
     for iter in 1:max_iter
         Ψ = ho_Ψ(B_g, B_b)
 
-        policy = endgrid_method(Ψ, model, (N_a, N_m); tol=ϵ_a, ρ0=1., kwargs...)
+        policy = endgrid_method(Ψ, model, (N_a, N_m); tol=ϵ_a, kwargs...)
 
         as, zs = economysim(policy, model; kwargs...)
         ms = log.(mean(as, dims=2))

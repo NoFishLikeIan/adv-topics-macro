@@ -3,9 +3,13 @@ include("src/commons/matrix.jl")
 
 include("src/week-five/denhaan.jl")
 include("src/week-five/markov/state.jl")
+
 include("src/week-five/policy/endgrid.jl")
 include("src/week-five/policy/vfi.jl")
+include("src/week-five/policy/stationary.jl")
+
 include("src/week-five/krusell-smith/simulate.jl")
+include("src/week-five/krusell-smith/det_simulation.jl")
 include("src/week-five/krusell-smith/main.jl")
 
 
