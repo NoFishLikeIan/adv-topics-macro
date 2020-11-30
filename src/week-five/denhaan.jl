@@ -43,13 +43,13 @@ struct DenHaanModel
     μ::Float64
 
     function DenHaanModel(
+        μ=0.15,
         Δ=0.01,
         β=0.99,
         γ=1.,
         α=0.36,
         δ=0.025,
         l=10 / 9,
-        μ=0.15,
         S_ϵ=(0, 1))
 
         S_z = (1 - Δ, 1 + Δ)

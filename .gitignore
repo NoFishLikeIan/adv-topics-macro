@@ -458,3 +458,4 @@ cython_debug/
 
 **/cached
 .env
+*.gif
