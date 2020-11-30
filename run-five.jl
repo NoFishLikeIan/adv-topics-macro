@@ -1,8 +1,8 @@
 include("src/commons/interpolation.jl")
 include("src/commons/matrix.jl")
 
-include("src/week-five/markov/state.jl")
 include("src/week-five/denhaan.jl")
+include("src/week-five/markov/state.jl")
 include("src/week-five/policy/endgrid.jl")
 include("src/week-five/policy/vfi.jl")
 include("src/week-five/krusell-smith/simulate.jl")
@@ -72,3 +72,4 @@ if do_smith
 
     savefig("$plot_path/policy_krusell.png")
 end
+
