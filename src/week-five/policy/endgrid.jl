@@ -9,6 +9,7 @@ assuming exogenous forecasting rule Ψ
 """
 function endgrid_method( 
     Ψ::Function, model::DenHaanModel, grids_sizes::NTuple{2,Int};
+    ρ0=0.8,
     grid_bounds=[.01, 10.],
     max_iter=1_000, tol=1e-3, 
     verbose=false)
@@ -76,11 +77,11 @@ function endgrid_method(
         verbose && print("Iteration $iter / $max_iter: $(@sprintf("%.4f", err_distance)) \r")
 
         if err_distance < tol 
-            verbose && print("Found policy in $iter iterations (|x - x'| = $(@sprintf("%.4f", err_distance))\n")
+            verbose && print("Found policy in $iter iterations (|x - x'| = $(@sprintf("%.4f", err_distance)))\n")
             return g
         end
 
-        ρ = .8 - iter / max_iter # Dynamic dumping parameter
+        ρ = ρ0 - iter / max_iter # Dynamic dumping parameter
         policy += ρ * d # Update with dumping parameter
     end
 

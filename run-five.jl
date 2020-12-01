@@ -21,9 +21,9 @@ plot_path = "src/week-five/solutions/plots/"
 
 # Test algorithm
 
-function run_krusselsmith(append="", μ=0.15, plot=false)
+function run_krusselsmith(append="", μ=0.15, ρ=0.8, plot=false)
     model = DenHaanModel(μ)
-    g = krusellsmith(model; verbose=true, ρ=0.5)
+    g = krusellsmith(model; verbose=true, ρ=ρ)
 
     a_grid = range(0.01, 5., length=500)
 
@@ -93,4 +93,5 @@ end
 
 
 model, g, as, zs = run_krusselsmith()
-gif_plot(as, zs)
+
+model_h, g_h, as_h, zs_h = run_krusselsmith("_hu", 0.65, 0.5)
