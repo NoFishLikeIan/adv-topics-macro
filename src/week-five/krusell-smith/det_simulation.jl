@@ -1,32 +1,6 @@
 using SparseArrays
 using Base.Threads
 
-function density_policy(a_grid::Vector{Float64})
-
-    function populate(a::Float64) 
-
-        dens_vec = zeros(length(a_grid))
-        for (k, ak) in enumerate(a_grid) # :(
-            if a < ak
-                if k == 1
-                    dens_vec[k] = 1.
-                    return dens_vec
-                else
-                    ak_1 = a_grid[k - 1]
-                    dens_vec[k - 1] = (ak - a) / (ak - ak_1)
-                    dens_vec[k] = (a - ak_1) / (ak - ak_1)
-                        
-                    return dens_vec
-                end
-            end
-        end
-
-        dens_vec[end] = 1.
-        return dens_vec
-    end
-
-end
-
 function columnormal(M::Matrix{Float64})
     M ./ sum(M, dims=1)
 end
