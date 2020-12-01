@@ -93,7 +93,7 @@ function gif_plot(as, zs; append="")
 end
 
 print("Running stochastic...\n")
-# model, g, as, zs = run_krusselsmith(stoch=true, do_plot=true)
+model, g, as, zs = run_krusselsmith(stoch=true, do_plot=true)
 
 print("Running determinstic...\n")
-model, g, as, zs = run_krusselsmith(stoch=false, do_plot=true)
+model, g, as, zs = run_krusselsmith(append="_ns", stoch=false, do_plot=true)
