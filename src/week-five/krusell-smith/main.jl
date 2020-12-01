@@ -48,12 +48,14 @@ function krusellsmith(
 
     B_g = B_b = [1., 2.] # Initial guess for forecasting rule Ψ
 
+    simulate = stoch ? economysim : economysim_det
+
     for iter in 1:max_iter
         Ψ = ho_Ψ(B_g, B_b)
 
         policy = endgrid_method(Ψ, model, (N_a, N_m); ρ0=ρ, tol=ϵ_a, kwargs...)
 
-        as, zs = economysim(policy, model; kwargs...)
+        as, zs = simulate(policy, model; kwargs...)
         ms = log.(mean(as, dims=2))
 
         booms = (zs .== S_z[end])

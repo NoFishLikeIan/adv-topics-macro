@@ -118,9 +118,9 @@ end
 """
 Get Markov transition for ϵ′ | z′, z, ϵ
 """
-function π_ϵ′(z′::State, z::State, model::DenHaanModel)
+function π_ϵ′(ϵ::State, z′::State, z::State, model::DenHaanModel)
     @unpack S, P = model.ζ
-    from = findall(st -> st[1] == z, S)
+    from = findall(st -> (st[1] == z) && (st[2] == ϵ), S)
     to = findall(st -> st[1] == z′, S)
 
     if isempty(from) || isempty(to) throw("State $z not in space $S") end

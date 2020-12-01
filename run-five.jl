@@ -21,15 +21,16 @@ plot_path = "src/week-five/solutions/plots/"
 
 # Test algorithm
 
-function run_krusselsmith(append="", μ=0.15, ρ=0.8, plot=false)
+function run_krusselsmith(;stoch=true, append="", μ=0.15, ρ=0.8, do_plot=false, N_a=100, N_m=10)
     model = DenHaanModel(μ)
-    g = krusellsmith(model; verbose=true, ρ=ρ)
+    g = krusellsmith(model; verbose=true, ρ=ρ, stoch=stoch)
 
     a_grid = range(0.01, 5., length=500)
 
-    as, zs = economysim(g, model; drop=0, T=5_000)
+    sim = stoch ? economysim_det : economysim
+    as, zs = sim(g, model; T=5_000)
 
-    if plot
+    if do_plot
         plot(title="Policy function", legend=:left, xlabel="a", ylabel="a′(a)")
 
         for (z_f, ϵ_f) in model.ζ.S
@@ -58,7 +59,7 @@ function run_krusselsmith(append="", μ=0.15, ρ=0.8, plot=false)
 end
 
 function gif_plot(as, zs; append="")
-
+    a_grid = range(0.01, 5., length=500)
     densities = []
     
     for (t, z) in enumerate(zs[end - 100:end])
@@ -91,7 +92,8 @@ function gif_plot(as, zs; append="")
 
 end
 
+print("Running stochastic...\n")
+# model, g, as, zs = run_krusselsmith(stoch=true, do_plot=true)
 
-model, g, as, zs = run_krusselsmith()
-
-model_h, g_h, as_h, zs_h = run_krusselsmith("_hu", 0.65, 0.5)
+print("Running determinstic...\n")
+model, g, as, zs = run_krusselsmith(stoch=false, do_plot=true)
